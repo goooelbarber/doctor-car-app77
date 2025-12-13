@@ -1,0 +1,31 @@
+{
+  "my_account": "حسابي",
+  "edit_name": "تعديل الاسم",
+  "account_settings": "إعدادات الحساب",
+  "change_language": "تغيير لغة التطبيق",
+  "arabic": "العربية",
+  "english": "الإنجليزية",
+  
+  "notifications": "تشغيل الإشعارات",
+  "dark_mode": "الوضع الليلي",
+
+  "manage_vehicles": "إدارة المركبات",
+  "manage_vehicles_sub": "إضافة وتعديل بيانات السيارات",
+
+  "payment_methods": "طرق الدفع",
+  "payment_methods_sub": "إدارة البطاقات والمحافظ",
+
+  "contact_support": "التواصل مع الدعم الفني",
+  "support_call": "اتصال",
+  "support_email": "بريد إلكتروني",
+  "support_whatsapp": "واتساب",
+
+  "language_changed_ar": "تم تغيير اللغة إلى العربية 🇪🇬",
+  "language_changed_en": "تم تغيير اللغة إلى الإنجليزية 🇬🇧",
+
+  "logout": "تسجيل الخروج",
+  "logout_done": "تم تسجيل الخروج بنجاح",
+  "delete_account": "حذف الحساب",
+  "delete_account_confirm": "هل أنت متأكد أنك تريد حذف الحساب؟ لا يمكن التراجع.",
+  "delete_account_done": "تم حذف الحساب بنجاح"
+}

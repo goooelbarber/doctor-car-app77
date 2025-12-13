@@ -1,0 +1,150 @@
+name: doctor_car_app
+description: A comprehensive car assistance and roadside service application.
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  carousel_slider: ^4.2.1
+  # الأساسيات
+  cupertino_icons: ^1.0.6
+  font_awesome_flutter: ^10.7.0
+  google_fonts: ^6.2.1
+  provider: ^6.1.2
+  flutter_rating_bar: ^4.0.1
+  lottie: ^3.1.0
+  local_auth: ^2.1.8
+  # الشبكات
+  http: ^1.1.0
+  http_parser: ^4.0.2
+  socket_io_client: ^2.0.3
+  mime: ^1.0.5
+
+  # ذكاء اصطناعي
+  dart_openai: ^5.1.0
+
+  # الصوت
+  speech_to_text: ^6.4.0
+
+  # الوسائط
+  image_picker: ^1.0.4
+  permission_handler: ^11.0.1
+  record: ^6.0.0
+  path_provider: ^2.1.1
+  path: ^1.8.3
+  flutter_tts: ^3.8.2
+  audioplayers: ^5.2.0
+
+  # الكاميرا
+  camera: ^0.10.5+2
+
+  # الخرائط
+  google_maps_flutter: ^2.5.0
+  google_maps_flutter_web: ^0.5.4
+  geolocator: ^10.1.0
+  geocoding: ^3.0.0
+
+  # الترجمة
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+  easy_localization: ^3.0.5
+
+  # الروابط
+  url_launcher: ^6.1.10
+
+  # Firebase
+  firebase_core: ^2.27.1
+  firebase_auth: ^4.17.9
+  cloud_firestore: ^4.16.0
+  firebase_messaging: ^14.8.9
+  firebase_crashlytics: ^3.4.19
+  firebase_analytics: ^10.8.10
+
+  # تسجيل الدخول
+  google_sign_in: ^6.2.1
+  flutter_facebook_auth: ^6.1.4
+  sign_in_with_apple: ^6.1.0
+
+  # الدفع
+  flutter_stripe: ^10.1.0
+
+  # التخزين
+  shared_preferences: ^2.3.2
+
+  # حساس التسارع
+  sensors_plus: ^7.0.0
+
+  # PDF
+  pdf: ^3.11.3
+  webview_flutter: ^4.13.0
+  avatar_glow: ^3.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+# 🔥 الحل السحري لتشغيل Google Maps على الويب
+dependency_overrides:
+  google_maps_flutter_web: any
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    # 🖼 صور عامة
+    - assets/images/
+    - assets/images/offer3.png
+    - assets/images/offer1.png
+    - assets/images/offer2.png
+    - assets/images/accient.png
+    - assets/images/logo1.png
+    - assets/images/A1.png
+    - assets/images/road.png
+    - assets/images/privacy.png
+    - assets/images/store.png
+    - assets/images/A2.png
+    - assets/images/A3.png
+    - assets/images/A4.png
+    - assets/images/A5.png
+    - assets/images/A6.png
+    - assets/images/A7.png
+    - assets/images/acc.png
+    
+    # 🌍 الترجمة
+    - assets/translations/
+    
+    # 🎬 لوتي – لاحظ إن الملف JSON وليس PNG
+    - assets/lottie/
+    - assets/lottie/doctor_car_intro.json
+
+    # 📍 أيقونات الخريطة
+    - assets/icons/user_pin.png
+    - assets/icons/tech_pin.png
+
+    # 🗺️ ستايل الخريطة
+    - assets/map_styles/uber_dark.json
+    - assets/images/searching.gif.png
+  fonts:
+    - family: Cairo
+      fonts:
+        - asset: assets/fonts/Cairo-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/Cairo-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Cairo-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Cairo-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Cairo-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Cairo-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Cairo-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Cairo-Black.ttf
+          weight: 900

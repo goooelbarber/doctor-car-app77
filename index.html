@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base href="/" />
+    <meta charset="UTF-8" />
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
+    <meta name="description" content="Doctor Car App" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Doctor Car</title>
+    <link rel="manifest" href="manifest.json" />
+
+    <!-- ===== مهم جدًا — تعريف initMap حتى لا يحدث خطأ ===== -->
+    <script>
+      function initMap() {}
+    </script>
+
+    <!-- ===== تحميل Google Maps API ===== -->
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD9BGSScE-DU9nbdFgIbJV4fbNspNdPg_M&libraries=places&callback=initMap"
+      async
+      defer>
+    </script>
+
+    <script>
+      // Prevent reload on back/forward buttons
+      window.addEventListener("pageshow", function (event) {
+        if (event.persisted) window.location.reload();
+      });
+    </script>
+
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      #paymob-holder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+      }
+
+      iframe.paymob-frame {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <script src="flutter_bootstrap.js" async></script>
+
+    <div id="paymob-holder"></div>
+
+    <script>
+      function loadPaymobIframe(iframeUrl) {
+        const holder = document.getElementById("paymob-holder");
+        holder.innerHTML = "";
+
+        const iframe = document.createElement("iframe");
+        iframe.className = "paymob-frame";
+        iframe.src = iframeUrl;
+        holder.appendChild(iframe);
+      }
+    </script>
+  </body>
+</html>

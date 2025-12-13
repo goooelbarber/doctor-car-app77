@@ -1,0 +1,31 @@
+{
+  "my_account": "My Account",
+  "edit_name": "Edit Name",
+  "account_settings": "Account Settings",
+  "change_language": "Change App Language",
+  "arabic": "Arabic",
+  "english": "English",
+  
+  "notifications": "Notifications",
+  "dark_mode": "Dark Mode",
+
+  "manage_vehicles": "Manage Vehicles",
+  "manage_vehicles_sub": "Add & edit your vehicle info",
+
+  "payment_methods": "Payment Methods",
+  "payment_methods_sub": "Manage cards & wallets",
+
+  "contact_support": "Contact Support",
+  "support_call": "Call",
+  "support_email": "Email",
+  "support_whatsapp": "WhatsApp",
+
+  "language_changed_ar": "Language changed to Arabic 🇪🇬",
+  "language_changed_en": "Language changed to English 🇬🇧",
+
+  "logout": "Logout",
+  "logout_done": "Logged out successfully",
+  "delete_account": "Delete Account",
+  "delete_account_confirm": "Are you sure you want to delete your account?",
+  "delete_account_done": "Account deleted successfully"
+}
