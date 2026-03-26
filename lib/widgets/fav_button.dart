@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:doctor_car_app/services/wishlist_service.dart';
-import 'package:doctor_car_app/models/product_model.dart';
+
+import '../models/product_model.dart';
+import '../services/wishlist_service.dart';
 
 class FavButton extends StatefulWidget {
   final ProductModel product;

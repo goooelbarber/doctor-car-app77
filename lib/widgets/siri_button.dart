@@ -93,8 +93,11 @@ class _SiriButtonState extends State<SiriButton> with TickerProviderStateMixin {
         child: Stack(
           alignment: Alignment.center,
           children: [
+            // ignore: deprecated_member_use
             _buildWave(_wave1, 110, Colors.blueAccent.withOpacity(.25)),
+            // ignore: deprecated_member_use
             _buildWave(_wave2, 140, Colors.purpleAccent.withOpacity(.25)),
+            // ignore: deprecated_member_use
             _buildWave(_wave3, 170, Colors.cyanAccent.withOpacity(.20)),
 
             // زر ميكروفون Siri
@@ -149,6 +152,7 @@ class _SiriButtonState extends State<SiriButton> with TickerProviderStateMixin {
               gradient: RadialGradient(
                 colors: [
                   color,
+                  // ignore: deprecated_member_use
                   color.withOpacity(0.01),
                 ],
               ),

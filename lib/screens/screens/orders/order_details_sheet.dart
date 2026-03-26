@@ -4,7 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import 'package:doctor_car_app/services/orders/orders_store.dart';
+import '../../../models/order.dart';
+import '../../../services/orders/orders_store.dart' hide OrderStatus;
 
 class OrderDetailsSheet {
   static const Color brand = Color(0xFFA8F12A);
@@ -39,6 +40,12 @@ class _OrderDetailsContent extends StatelessWidget {
         return "مكتمل";
       case OrderStatus.cancelled:
         return "ملغي";
+      case OrderStatus.pending:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case OrderStatus.inProgress:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
   }
 
@@ -232,8 +239,10 @@ class _OrderDetailsContent extends StatelessWidget {
                                     children: [
                                       _InfoRow(
                                         label: "الحالة",
-                                        value: _statusText(order.status),
-                                        valueColor: _statusColor(order.status),
+                                        value: _statusText(
+                                            order.status as OrderStatus),
+                                        valueColor: _statusColor(
+                                            order.status as OrderStatus),
                                       ),
                                       _InfoRow(
                                         label: "اسم الخدمة",

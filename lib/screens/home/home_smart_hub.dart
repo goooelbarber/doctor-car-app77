@@ -77,6 +77,7 @@ extension _HomeSmartHub on _HomeScreenState {
   }
 
   // ===================== Smart Hub (PRO) =====================
+  // ignore: unused_element
   Widget _smartHubBarPro() {
     return Semantics(
       button: true,
@@ -1203,6 +1204,7 @@ extension _HomeSmartHub on _HomeScreenState {
     if (file == null || !mounted) return;
 
     // (اختياري) افتح Preview الأول
+    // ignore: unused_element
     Future<void> _pickImage(ImageSource source) async {
       final picker = ImagePicker();
       final XFile? file = await picker.pickImage(

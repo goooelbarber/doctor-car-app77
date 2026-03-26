@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'package:doctor_car_app/screens/chat/technician_chat_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import '../../services/socket_service.dart';
+import '../services/socket_service.dart';
+import 'chat/technician_chat_screen.dart';
 
 class IncomingRequestScreen extends StatefulWidget {
   final String technicianToken;

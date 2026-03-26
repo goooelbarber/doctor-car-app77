@@ -1,9 +1,10 @@
 // 📁 lib/services/car_types_service.dart
 
 import 'dart:convert';
-import 'package:doctor_car_app/models/car_brand.dart';
-import 'package:doctor_car_app/models/car_model_name.dart';
 import 'package:http/http.dart' as http;
+
+import '../models/car_brand.dart';
+import '../models/car_model_name.dart';
 
 class CarTypesService {
   static const String base = "http://10.0.2.2:5000/api/car-types";

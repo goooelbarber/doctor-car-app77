@@ -1,27 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.car3">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- 🌐 INTERNET -->
     <uses-permission android:name="android.permission.INTERNET" />
-
-    <!-- 📍 Location for Maps -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <!-- 📡 Allow Cleartext (Paymob needs HTTP sometimes) -->
     <application
+        android:label="doctor_car_app"
         android:name="${applicationName}"
-        android:label="Doctor Car"
-        android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="true">
+        android:icon="@mipmap/ic_launcher">
 
-        <!-- 🗺️ Google Maps API Key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_GOOGLE_MAPS_API_KEY" />
+            android:value="${MAPS_API_KEY}" />
 
-        <!-- 🚀 Main Activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -32,7 +23,6 @@
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
 
-            <!-- 🌈 Theme -->
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
@@ -43,19 +33,15 @@
             </intent-filter>
         </activity>
 
-        <!-- ⚙️ Flutter Embedding -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-
     </application>
 
-    <!-- 📱 Allow reading plain text -->
     <queries>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT" />
             <data android:mimeType="text/plain" />
         </intent>
     </queries>
-
 </manifest>

@@ -1,14 +1,18 @@
 // PATH: lib/screens/home/home_theme.dart
+// ignore_for_file: unused_element
+
 part of '../home_screen.dart';
 
 extension _HomeThemeTokens on _HomeScreenState {
   // ================== BRAND ==================
-  // ✅ Neon Green (Base)
-  Color get brand => const Color.fromARGB(255, 26, 217, 105);
+  // ✅ DoctorCar Neon Lime (موحّد مع باقي الشاشات)
+  Color get brand => const Color(0xFFA8F12A);
 
   // ✅ 3-step palette for richer gradients
-  Color get brand2 => Color.lerp(brand, const Color(0xff0B1220), 0.22)!;
-  Color get brand3 => Color.lerp(brand, Colors.white, 0.18)!;
+  Color get brand2 =>
+      Color.lerp(brand, const Color(0xff0B1220), 0.22) ??
+      const Color(0xff0B1220);
+  Color get brand3 => Color.lerp(brand, Colors.white, 0.18) ?? Colors.white;
 
   // ================== COLORS (FOUNDATION) ==================
   Color get bgColor =>
@@ -25,10 +29,8 @@ extension _HomeThemeTokens on _HomeScreenState {
   // Text
   Color get textMain =>
       _isDarkMode ? const Color(0xffF9FAFB) : const Color(0xff111827);
-
   Color get textSub =>
       _isDarkMode ? const Color(0xffCBD5E1) : const Color(0xff6B7280);
-
   Color get textMute =>
       _isDarkMode ? const Color(0xff94A3B8) : const Color(0xff9CA3AF);
 
@@ -86,7 +88,6 @@ extension _HomeThemeTokens on _HomeScreenState {
         ),
       ];
 
-  // ✅ NEW: Glow مناسب للأخضر المتدرج
   List<BoxShadow> get greenWhiteGlow => [
         BoxShadow(
           color: brand.withOpacity(_isDarkMode ? .24 : .18),
@@ -126,7 +127,6 @@ extension _HomeThemeTokens on _HomeScreenState {
 
   // ================== GRADIENTS (PRO) ==================
 
-  /// ✅ Main brand gradient (Premium Neon)
   LinearGradient get brandGradient => LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -138,64 +138,56 @@ extension _HomeThemeTokens on _HomeScreenState {
         stops: const [0.0, 0.48, 1.0],
       );
 
-  /// ✅ For big CTA buttons (more punch)
   LinearGradient get ctaGradient => LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          Color.lerp(brand3, brand, 0.50)!,
+          Color.lerp(brand3, brand, 0.50) ?? brand,
           brand,
-          Color.lerp(brand, brand2, 0.55)!,
+          Color.lerp(brand, brand2, 0.55) ?? brand2,
         ],
         stops: const [0.0, 0.55, 1.0],
       );
 
-  // ---------------------------------------------------------------------------
-  // ✅ NEW: Official Green → White Gradient (Use this everywhere instead of solid green)
-  // ---------------------------------------------------------------------------
-
-  /// ✅ Green → White (Official)
-  /// - Light: أخضر قوي → أبيض
-  /// - Dark: أخضر قوي → أبيض شفاف (عشان ما يبقاش “رمادي”)
+  // ✅ Green → White (Official)
   LinearGradient get greenWhiteGradient => LinearGradient(
         begin: Alignment.topRight,
         end: Alignment.bottomLeft,
         colors: _isDarkMode
             ? [
                 brand.withOpacity(.92),
-                Color.lerp(brand, Colors.white, .58)!,
+                (Color.lerp(brand, Colors.white, .58) ?? Colors.white)
+                    .withOpacity(.85),
                 Colors.white.withOpacity(.08),
               ]
             : [
                 brand.withOpacity(.98),
-                Color.lerp(brand, Colors.white, .64)!,
+                Color.lerp(brand, Colors.white, .64) ?? Colors.white,
                 Colors.white,
               ],
         stops: const [0.0, 0.55, 1.0],
       );
 
-  /// ✅ Stronger Green → White (for CTA / Floating buttons)
   LinearGradient get greenWhiteGradientStrong => LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: _isDarkMode
             ? [
-                Color.lerp(brand, Colors.white, .22)!,
+                Color.lerp(brand, Colors.white, .22) ?? brand3,
                 brand.withOpacity(.98),
-                Color.lerp(brand, Colors.white, .52)!,
+                Color.lerp(brand, Colors.white, .52) ?? brand3,
               ]
             : [
-                Color.lerp(brand, Colors.white, .22)!,
+                Color.lerp(brand, Colors.white, .22) ?? brand3,
                 brand,
-                Color.lerp(brand, Colors.white, .58)!,
+                Color.lerp(brand, Colors.white, .58) ?? brand3,
               ],
         stops: const [0.0, 0.55, 1.0],
       );
 
-  // ✅ Backward compatible alias (لو في ملفات قديمة بتناديه)
+  // Backward compatible alias
   LinearGradient get greenToWhiteGradient => greenWhiteGradient;
 
-  /// ✅ NEW: Green soft background cards
   LinearGradient get softGreenCardGradient => LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -213,19 +205,19 @@ extension _HomeThemeTokens on _HomeScreenState {
         stops: const [0.0, 0.60, 1.0],
       );
 
-  /// ✅ AppBar (Dark glass + green tint)
   LinearGradient get appBarGradient => LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
           const Color(0xff06101C),
-          Color.lerp(const Color(0xff06101C), brand2, 0.10)!,
-          Color.lerp(const Color(0xff06101C), brand, 0.06)!,
+          Color.lerp(const Color(0xff06101C), brand2, 0.10) ??
+              const Color(0xff06101C),
+          Color.lerp(const Color(0xff06101C), brand, 0.06) ??
+              const Color(0xff06101C),
         ],
         stops: const [0.0, 0.65, 1.0],
       );
 
-  /// ✅ Glass card gradient
   LinearGradient get glassCardGradient => LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -243,14 +235,14 @@ extension _HomeThemeTokens on _HomeScreenState {
         stops: const [0.0, 0.55, 1.0],
       );
 
-  /// ✅ Background subtle gradient
   LinearGradient get screenBgGradient => LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: _isDarkMode
             ? [
                 const Color(0xff0B1220),
-                Color.lerp(const Color(0xff0B1220), brand2, 0.06)!,
+                Color.lerp(const Color(0xff0B1220), brand2, 0.06) ??
+                    const Color(0xff0B1220),
                 const Color(0xff07101C),
               ]
             : const [

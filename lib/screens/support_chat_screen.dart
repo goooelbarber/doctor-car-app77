@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../models/chat_message.dart';
 
+import '../models/chat_message.dart';
 import '../services/socket_service.dart';
 import '../services/support_chat_service.dart';
 
@@ -31,6 +31,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
   bool techTyping = false;
 
   final List<ChatMessage> messages = [];
+
   Timer? _typingTimer;
   bool _nearBottom = true;
 
@@ -57,6 +58,9 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
       // ✅ init user socket (مرة واحدة)
       socket.initUser(userId: widget.userId);
 
+      // 🧹 نظف أي listeners قديمة
+      socket.clearSupportListeners();
+
       socket.onConnectionChanged((connected) {
         if (!mounted) return;
         setState(() => socketConnected = connected);
@@ -64,20 +68,28 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
         // احتياط: join room بعد الاتصال
         if (connected) {
           socket.joinSupportChat(widget.chatId);
+
+          // 👀 mark read عند الاتصال (اختياري)
+          socket.emitSupportRead(
+            chatId: widget.chatId,
+            readerType: "user",
+          );
         }
       });
-
-      // 🧹 نظف أي listeners قديمة
-      socket.clearSupportListeners();
 
       // 🚪 join chat room
       socket.joinSupportChat(widget.chatId);
 
       // 📜 load history
       final old = await SupportChatService.getMessages(widget.chatId);
-      messages
-        ..clear()
-        ..addAll(old.map(ChatMessage.fromServer));
+
+      if (!mounted) return;
+      setState(() {
+        messages
+          ..clear()
+          ..addAll(old.map(ChatMessage.fromServer));
+        loading = false;
+      });
 
       // 👀 mark read
       socket.emitSupportRead(
@@ -90,10 +102,10 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
       socket.onSupportTyping(_onTyping);
       socket.onSupportAck(_onAck);
 
-      if (mounted) setState(() => loading = false);
       WidgetsBinding.instance.addPostFrameCallback((_) => _jumpDown());
-    } catch (e) {
-      if (mounted) setState(() => loading = false);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => loading = false);
     }
   }
 
@@ -105,6 +117,8 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
     if (!mounted) return;
 
     final msg = ChatMessage.fromServer(data);
+
+    // منع التكرار
     final exists = msg.id != null && messages.any((m) => m.id == msg.id);
     if (exists) return;
 
@@ -126,6 +140,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
     if (i == -1 || !mounted) return;
 
     setState(() {
+      // مهم: لازم ChatMessage.id و status يكونوا مش final في الموديل
       messages[i].id = serverId;
       messages[i].status = "sent";
     });
@@ -161,6 +176,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
     });
 
     controller.clear();
+    setState(() {}); // ✅ علشان زر الإرسال يطفي بعد المسح
     _jumpDown();
 
     socket.sendSupportMessage(
@@ -192,6 +208,10 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
 
   void _onTypingChanged(String _) {
     _emitTyping(true);
+
+    // ✅ مهم: تحديث الواجهة علشان canSend يتحدث
+    if (mounted) setState(() {});
+
     _typingTimer?.cancel();
     _typingTimer =
         Timer(const Duration(milliseconds: 600), () => _emitTyping(false));
@@ -208,7 +228,18 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
   void _jumpDown() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!scroll.hasClients) return;
-      scroll.jumpTo(scroll.position.maxScrollExtent);
+
+      try {
+        final max = scroll.position.maxScrollExtent;
+        // animateTo ألطف وأأمن من jumpTo
+        scroll.animateTo(
+          max,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
+        );
+      } catch (_) {
+        // تجاهل أي خطأ layout مؤقت
+      }
     });
   }
 
@@ -220,6 +251,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
   void dispose() {
     _typingTimer?.cancel();
 
+    // اطفّي typing قبل الخروج
     socket.emitSupportTyping(
       chatId: widget.chatId,
       typing: false,
@@ -227,6 +259,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
     );
 
     socket.leaveSupportChat(widget.chatId);
+    socket.clearSupportListeners();
 
     controller.dispose();
     scroll.dispose();
@@ -239,6 +272,8 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final canSend = socketConnected && controller.text.trim().isNotEmpty;
+
     return Scaffold(
       backgroundColor: const Color(0xFF070B14),
       appBar: AppBar(
@@ -269,7 +304,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
           : Column(
               children: [
                 Expanded(child: _messagesView()),
-                _composer(),
+                _composer(canSend: canSend),
               ],
             ),
     );
@@ -323,9 +358,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
     );
   }
 
-  Widget _composer() {
-    final canSend = socketConnected && controller.text.trim().isNotEmpty;
-
+  Widget _composer({required bool canSend}) {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),

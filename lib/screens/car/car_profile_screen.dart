@@ -1,9 +1,10 @@
 // 📁 lib/screens/car/car_profile_screen.dart
 
 import 'dart:ui';
-import 'package:doctor_car_app/screens/car/edit_car_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+import 'edit_car_screen.dart';
 
 class CarProfileScreen extends StatelessWidget {
   final Map vehicle;

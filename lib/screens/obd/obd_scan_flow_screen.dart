@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:doctor_car_app/services/obd/obd_elm327_service.dart';
+
+import '../../services/obd/obd_elm327_service.dart';
 
 class ObdScanFlowScreen extends StatefulWidget {
   const ObdScanFlowScreen({super.key});

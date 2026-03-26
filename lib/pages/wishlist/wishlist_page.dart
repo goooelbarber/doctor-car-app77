@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:doctor_car_app/models/product_model.dart';
-import 'package:doctor_car_app/services/wishlist_service.dart';
+import '../../models/product_model.dart';
+import '../../services/wishlist_service.dart';
 import '../products/product_details_page.dart';
 
 class WishlistPage extends StatefulWidget {

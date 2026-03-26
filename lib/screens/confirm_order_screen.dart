@@ -2,12 +2,12 @@
 
 import 'dart:ui';
 
-import 'package:doctor_car_app/screens/searching_technician_screen.dart';
-import 'package:doctor_car_app/services/order_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:swipeable_button_view/swipeable_button_view.dart';
+
+import '../services/order_service.dart';
+import 'searching_technician_screen.dart';
 
 class ConfirmOrderScreen extends StatefulWidget {
   final String userId;
@@ -36,11 +36,8 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
   Map<String, dynamic>? response;
   String? error;
 
-  bool isFinished = false; // swipe state
-
   late final LatLng userLatLng = LatLng(widget.lat, widget.lng);
 
-  // Uber dark style (اختياري)
   final String _uberMapStyle = '''
   [
     {"elementType":"geometry","stylers":[{"color":"#0b1220"}]},
@@ -131,7 +128,7 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
     return (id ?? "").toString();
   }
 
-  Future<void> _confirmCreateOrder() async {
+  Future<void> _confirmCreateOrderAndGo() async {
     if (creatingOrder) return;
     setState(() => creatingOrder = true);
 
@@ -148,7 +145,7 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
       final orderId = _extractOrderId(res);
       if (orderId.isEmpty) throw Exception("orderId missing");
 
-      setState(() => isFinished = true);
+      if (!mounted) return;
 
       Navigator.pushReplacement(
         context,
@@ -158,13 +155,15 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
             serviceType: widget.serviceType,
             lat: widget.lat,
             lng: widget.lng,
-            orderId: orderId, selectedServices: [], address: '',
+            orderId: orderId,
+            selectedServices: const [],
+            address: '',
           ),
         ),
       );
     } catch (e) {
       _snack("فشل إنشاء الطلب: ${e.toString()}");
-      setState(() => isFinished = false);
+      rethrow; // عشان زرار السحب يرجع لو فشل
     } finally {
       if (mounted) setState(() => creatingOrder = false);
     }
@@ -184,16 +183,13 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
       backgroundColor: const Color(0xFF0B1220),
       body: Stack(
         children: [
-          // ===== Map preview (top) =====
           Positioned.fill(
             child: GoogleMap(
               initialCameraPosition: CameraPosition(
                 target: userLatLng,
                 zoom: 15.2,
               ),
-              onMapCreated: (c) {
-                c.setMapStyle(_uberMapStyle);
-              },
+              onMapCreated: (c) => c.setMapStyle(_uberMapStyle),
               zoomControlsEnabled: false,
               myLocationButtonEnabled: false,
               compassEnabled: false,
@@ -212,8 +208,6 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
               },
             ),
           ),
-
-          // ===== dark gradient overlay like Uber =====
           Positioned.fill(
             child: IgnorePointer(
               child: Container(
@@ -232,8 +226,6 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
               ),
             ),
           ),
-
-          // ===== Top bar =====
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -253,13 +245,11 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
                     ),
                   ),
                   const Spacer(),
-                  const SizedBox(width: 44), // balance
+                  const SizedBox(width: 44),
                 ],
               ),
             ),
           ),
-
-          // ===== Bottom sheet =====
           Align(
             alignment: Alignment.bottomCenter,
             child: ClipRRect(
@@ -288,8 +278,6 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
                         ),
                       ),
                       const SizedBox(height: 14),
-
-                      // Service title
                       Row(
                         children: [
                           const Icon(Icons.build,
@@ -308,8 +296,6 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
                         ],
                       ),
                       const SizedBox(height: 10),
-
-                      // Estimate cards
                       if (loadingEstimate)
                         _loadingRow()
                       else if (error != null)
@@ -346,41 +332,17 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
                             ),
                           ],
                         ),
-
                       const SizedBox(height: 16),
-
-                      // Swipe to confirm
-                      SwipeableButtonView(
-                        isFinished: isFinished,
-                        onWaitingProcess: () async {
-                          if (!canSwipe) return;
-                          await _confirmCreateOrder();
-                        },
-                        onFinish: () async {},
+                      SwipeToConfirmButton(
+                        enabled: canSwipe,
+                        loading: creatingOrder,
+                        text: "اسحب لتأكيد الطلب",
                         activeColor: Colors.amber,
-                        buttonText: "اسحب لتأكيد الطلب",
-                        buttontextstyle: GoogleFonts.cairo(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        buttonWidget: creatingOrder
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  color: Colors.black,
-                                  strokeWidth: 2.5,
-                                ),
-                              )
-                            : const Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                color: Colors.black,
-                              ),
+                        onConfirmed: () async {
+                          await _confirmCreateOrderAndGo();
+                        },
                       ),
-
                       const SizedBox(height: 10),
-
                       Text(
                         "بالسحب أنت تؤكد إرسال الطلب لأقرب الفنيين المتاحين.",
                         style: GoogleFonts.cairo(
@@ -425,8 +387,10 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
           child: CircularProgressIndicator(strokeWidth: 2.5),
         ),
         const SizedBox(width: 12),
-        Text("جارٍ حساب السعر والوقت...",
-            style: GoogleFonts.cairo(color: Colors.white70)),
+        Text(
+          "جارٍ حساب السعر والوقت...",
+          style: GoogleFonts.cairo(color: Colors.white70),
+        ),
       ],
     );
   }
@@ -489,5 +453,196 @@ class _ConfirmOrderScreenState extends State<ConfirmOrderScreen> {
         ],
       ),
     );
+  }
+}
+
+/// ============================================================
+/// ✅ Custom Swipe Button (بدون أي packages)
+/// ============================================================
+class SwipeToConfirmButton extends StatefulWidget {
+  final bool enabled;
+  final bool loading;
+  final String text;
+  final Color activeColor;
+  final Future<void> Function() onConfirmed;
+
+  const SwipeToConfirmButton({
+    super.key,
+    required this.enabled,
+    required this.loading,
+    required this.text,
+    required this.activeColor,
+    required this.onConfirmed,
+  });
+
+  @override
+  State<SwipeToConfirmButton> createState() => _SwipeToConfirmButtonState();
+}
+
+class _SwipeToConfirmButtonState extends State<SwipeToConfirmButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  double _drag = 0; // double فقط
+  bool _done = false;
+
+  static const double _h = 56;
+  static const double _knob = 48;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 220),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _animateTo(double target) {
+    final double begin = _drag;
+    final double end = target;
+
+    _ctrl
+      ..stop()
+      ..reset();
+
+    final anim = Tween<double>(begin: begin, end: end).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic),
+    );
+
+    anim.addListener(() {
+      if (!mounted) return;
+      setState(() => _drag = anim.value);
+    });
+
+    _ctrl.forward();
+  }
+
+  Future<void> _confirm(double maxDrag) async {
+    if (_done) return;
+    setState(() => _done = true);
+    _animateTo(maxDrag);
+
+    try {
+      await widget.onConfirmed();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _done = false);
+      _animateTo(0);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (_, c) {
+      final double w = c.maxWidth;
+
+      // ✅ FIX: clamp بيرجع num -> نحوله double
+      final double maxDrag = (w - _knob).clamp(0.0, double.infinity).toDouble();
+
+      final bool disabled = !widget.enabled || widget.loading || _done;
+
+      return Opacity(
+        opacity: widget.enabled ? 1 : 0.6,
+        child: Container(
+          height: _h,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(.08),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: Colors.white12),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  widget.text,
+                  style: GoogleFonts.cairo(
+                    color: Colors.white.withOpacity(.92),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      width: (_drag + _knob).clamp(0.0, w).toDouble(),
+                      decoration: BoxDecoration(
+                        color: widget.activeColor.withOpacity(.20),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: _drag,
+                child: GestureDetector(
+                  onHorizontalDragUpdate: disabled
+                      ? null
+                      : (d) {
+                          // ✅ FIX: clamp بيرجع num -> نحوله double
+                          final double next = (_drag + d.delta.dx)
+                              .clamp(0.0, maxDrag)
+                              .toDouble();
+                          setState(() => _drag = next);
+                        },
+                  onHorizontalDragEnd: disabled
+                      ? null
+                      : (_) {
+                          final bool reached = _drag >= maxDrag * 0.82;
+                          if (reached) {
+                            _confirm(maxDrag); // ✅ دلوقتي maxDrag double
+                          } else {
+                            _animateTo(0);
+                          }
+                        },
+                  child: Container(
+                    width: _knob,
+                    height: _knob,
+                    decoration: BoxDecoration(
+                      color: widget.activeColor,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(.25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 6),
+                        )
+                      ],
+                    ),
+                    child: Center(
+                      child: widget.loading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: Colors.black,
+                              ),
+                            )
+                          : Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 18,
+                              color: Colors.black.withOpacity(.85),
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 }

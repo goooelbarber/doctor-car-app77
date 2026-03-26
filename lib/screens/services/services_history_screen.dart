@@ -1,7 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:doctor_car_app/screens/service_details_screen.dart';
+
+import '../service_details_screen.dart';
 
 class ServicesHistoryScreen extends StatefulWidget {
   const ServicesHistoryScreen({super.key});

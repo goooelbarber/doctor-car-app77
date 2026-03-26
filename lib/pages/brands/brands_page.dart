@@ -1,5 +1,5 @@
-import 'package:doctor_car_app/data/brands/brands_data.dart';
 import 'package:flutter/material.dart';
+import '../../data/brands/brands_data.dart';
 import 'models_page.dart';
 
 class BrandsPage extends StatefulWidget {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 // ignore: unused_import
-import 'package:doctor_car_app/services/api_service.dart';
+import '../../services/api_service.dart';
 
 class EditMaintenanceScreen extends StatefulWidget {
   final Map maintenance;

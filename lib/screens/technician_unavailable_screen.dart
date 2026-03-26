@@ -70,9 +70,6 @@ class _TechnicianUnavailableScreenState
     }
   }
 
-  // ================================================================
-  // اختيار الفني البديل
-  // ================================================================
   void _chooseNextTech() {
     Navigator.pushReplacement(
       context,
@@ -81,6 +78,9 @@ class _TechnicianUnavailableScreenState
           orderId: "REPLACED_BY_SERVER_ORDER_ID", // غيّرها عند الدمج
           userId: widget.userId,
           baseUrl: ApiConfig.baseUrl,
+          serviceType: '',
+          userLat: widget.lat,
+          userLng: widget.lng,
         ),
       ),
     );

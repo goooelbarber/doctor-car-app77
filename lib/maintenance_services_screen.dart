@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:doctor_car_app/screens/supplementary_services_screen.dart';
-import 'package:doctor_car_app/pages/home/home_page.dart';
+import 'pages/home/home_page.dart';
+import 'screens/supplementary_services_screen.dart';
 
 class MaintenanceServicesScreen extends StatefulWidget {
   const MaintenanceServicesScreen({super.key});
@@ -21,16 +21,62 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
   String? selected;
   bool _opening = false;
 
-  // ===== Colors (same style as screenshot) =====
-  static const Color kBgTop = Color(0xFF0B1220);
-  static const Color kBgMid = Color(0xFF0A1628);
-  static const Color kBgBottom = Color(0xFF07101E);
+  late final AnimationController _controller;
+  late final Animation<double> _fade;
+  late final Animation<double> _scale;
 
-  static const Color kNeon = Color(0xFFB7F44A); // neon green
-  static const Color kNeon2 = Color(0xFF8CFF4B);
+  // =========================
+  // Doctor Car Dark Blue Theme
+  // =========================
+  static const Color _bg0 = Color(0xFF081A36);
+  static const Color _bg1 = Color(0xFF0B2348);
+  static const Color _bg2 = Color(0xFF040D1D);
 
-  static const Color kText = Color(0xFFEAF2FF);
-  static const Color kMuted = Color(0xFF9FB0C6);
+  static const Color _accent = Color(0xFF1B4F9C);
+  static const Color _accentSoft = Color(0xFFE7EEF9);
+  static const Color _accentDark = Color(0xFF143F7C);
+  static const Color _accentDeep = Color(0xFF10386B);
+
+  static const Color _whiteTint = Color(0xFFF7F9FC);
+  static const Color _textPrimary = Color(0xFFF2F6FB);
+  static const Color _textSecondary = Color(0xFFC9D6EA);
+  static const Color _textMuted = Color(0xFF93A9C9);
+  // ignore: unused_field
+  static const Color _textOnDark = Colors.white;
+  // ignore: unused_field
+  static const Color _danger = Color(0xFFD96C6C);
+
+  // ignore: unused_field
+  static const LinearGradient _brandGradient = LinearGradient(
+    colors: [
+      Color(0xFF1B4F99),
+      Color(0xFF245AA6),
+      Color(0xFF153F78),
+    ],
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+  );
+
+  static const LinearGradient _panelGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF17345F),
+      Color(0xFF122B50),
+      Color(0xFF0D2140),
+    ],
+  );
+
+  static const LinearGradient _cardBlueGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF1D4F99),
+      Color(0xFF163F7E),
+      Color(0xFF0E2D60),
+    ],
+    stops: [0.0, 0.55, 1.0],
+  );
 
   final List<Map<String, dynamic>> services = [
     {
@@ -43,7 +89,7 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
     {
       "key": "wash",
       "name": "غسيل و عناية",
-      "subtitle": "غسيل خارجي/داخلي • تلميع",
+      "subtitle": "غسيل خارجي • داخلي • تلميع",
       "icon": Icons.local_car_wash_rounded,
       "emoji": "🚿",
     },
@@ -64,216 +110,46 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
   ];
 
   @override
-  Widget build(BuildContext context) {
-    final selectedItem = selected == null
-        ? null
-        : services.firstWhere((s) => s["key"] == selected);
+  void initState() {
+    super.initState();
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      backgroundColor: kBgTop,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        centerTitle: true,
-        title: Text(
-          "خدمات الصيانة",
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    )..forward();
+
+    _fade = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _scale = Tween<double>(begin: .985, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _showMessage(String msg) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: _accentDeep,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: Text(
+          msg,
+          textAlign: TextAlign.center,
           style: GoogleFonts.cairo(
-            fontSize: 20,
-            fontWeight: FontWeight.w900,
             color: Colors.white,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Stack(
-        children: [
-          // ===== Background =====
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [kBgTop, kBgMid, kBgBottom],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-          ),
-
-          // ===== Neon glow blobs =====
-          Positioned(
-            top: -90,
-            right: -80,
-            child: _GlowBlob(color: kNeon.withOpacity(0.12), size: 240),
-          ),
-          Positioned(
-            bottom: -120,
-            left: -80,
-            child: _GlowBlob(color: kNeon2.withOpacity(0.10), size: 300),
-          ),
-
-          // ===== Content =====
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16, top: 10),
-              child: Column(
-                children: [
-                  // ===== Header card =====
-                  _GlassCard(
-                    padding: const EdgeInsets.all(14),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 54,
-                          height: 54,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: kNeon.withOpacity(0.12),
-                            border: Border.all(color: kNeon.withOpacity(0.35)),
-                          ),
-                          child: const Icon(
-                            Icons.home_repair_service_rounded,
-                            color: kNeon,
-                            size: 28,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "اطلب خدمتك في ثواني",
-                                style: GoogleFonts.cairo(
-                                  color: kText,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                "اختار الخدمة • حدّد موقعك • نوصلك بأقرب فني",
-                                style: GoogleFonts.cairo(
-                                  color: kMuted,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 7),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(999),
-                            color: kNeon.withOpacity(0.12),
-                            border: Border.all(color: kNeon.withOpacity(0.35)),
-                          ),
-                          child: Text(
-                            "مختار",
-                            style: GoogleFonts.cairo(
-                              color: kNeon,
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  // ===== List =====
-                  Expanded(
-                    child: ListView.separated(
-                      padding: const EdgeInsets.only(bottom: 130),
-                      itemCount: services.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
-                      itemBuilder: (_, index) {
-                        final item = services[index];
-                        final isSelected = selected == item["key"];
-
-                        return _ServiceListTile(
-                          title: item["name"] as String,
-                          subtitle: item["subtitle"] as String,
-                          icon: item["icon"] as IconData,
-                          emoji: item["emoji"] as String,
-                          selected: isSelected,
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            setState(() => selected = item["key"] as String);
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // ===== Bottom Section (like screenshot) =====
-          Positioned(
-            left: 16,
-            right: 16,
-            bottom: 16,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Selected hint panel (optional like "اختر خدمة للمتابعة")
-                _GlassCard(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  child: Row(
-                    children: [
-                      Icon(
-                        selected == null
-                            ? Icons.info_outline_rounded
-                            : Icons.check_circle_outline_rounded,
-                        color: selected == null ? kMuted : kNeon,
-                        size: 22,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          selected == null
-                              ? "اختر خدمة للمتابعة"
-                              : "الخدمة: ${(selectedItem?["name"] ?? "")}",
-                          style: GoogleFonts.cairo(
-                            color: selected == null ? kMuted : kText,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                _BottomCTA(
-                  enabled: selected != null && !_opening,
-                  loading: _opening,
-                  label:
-                      selected == null ? "اختر خدمة أولاً" : "طلب الخدمة الآن",
-                  onTap: selected == null || _opening
-                      ? null
-                      : () => _openService(selected!),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
 
-  // ===== Navigation =====
   Future<void> _openService(String key) async {
     setState(() => _opening = true);
     HapticFeedback.mediumImpact();
@@ -288,7 +164,8 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (_) => const SupplementaryServicesScreen()),
+            builder: (_) => const SupplementaryServicesScreen(),
+          ),
         );
         break;
 
@@ -299,59 +176,126 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
         );
         break;
 
+      case "wash":
+      case "check":
+        _showMessage("الخدمة ستتوفر قريبًا");
+        break;
+
       default:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: const Color(0xFF0F1D32),
-            behavior: SnackBarBehavior.floating,
-            content: Text(
-              "الخدمة ستتوفر قريبًا",
-              style: GoogleFonts.cairo(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
+        _showMessage("الخدمة غير متاحة حاليًا");
+    }
+  }
+
+  Color _serviceColor(String key) {
+    switch (key) {
+      case "maintenance":
+        return const Color(0xFF2A5DAD);
+      case "wash":
+        return const Color(0xFF1E4D96);
+      case "accessories":
+        return const Color(0xFF355F9E);
+      case "check":
+        return const Color(0xFF244C88);
+      default:
+        return _accent;
+    }
+  }
+
+  Widget _blurBlob({required double size, required Color color}) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(size),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 52, sigmaY: 52),
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(size),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _background() {
+    return Stack(
+      children: [
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [_bg0, _bg1, _bg2],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        Positioned(
+          top: -120,
+          left: -80,
+          child: _blurBlob(size: 260, color: _accent.withOpacity(.16)),
+        ),
+        Positioned(
+          bottom: -170,
+          right: -90,
+          child: _blurBlob(size: 320, color: _accentDark.withOpacity(.14)),
+        ),
+        Positioned(
+          top: 120,
+          right: -60,
+          child: _blurBlob(size: 170, color: Colors.white.withOpacity(.04)),
+        ),
+        Positioned(
+          bottom: 70,
+          left: -40,
+          child: _blurBlob(size: 180, color: _accent.withOpacity(.10)),
+        ),
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: const Alignment(0.0, 0.9),
+                radius: 1.2,
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withOpacity(.10),
+                  Colors.black.withOpacity(.24),
+                ],
               ),
             ),
           ),
-        );
-    }
+        ),
+      ],
+    );
   }
-}
 
-// ===================== Widgets =====================
+  Widget _glassPanel({
+    required Widget child,
+    EdgeInsets? padding,
+    BorderRadius? radius,
+  }) {
+    final r = radius ?? BorderRadius.circular(24);
 
-class _GlassCard extends StatelessWidget {
-  final Widget child;
-  final EdgeInsets padding;
-
-  const _GlassCard({
-    required this.child,
-    required this.padding,
-  });
-
-  static const Color kNeon = Color(0xFFB7F44A);
-
-  @override
-  Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: r,
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
-          padding: padding,
+          padding: padding ?? const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
-            color: Colors.white.withOpacity(0.04),
-            border: Border.all(color: Colors.white.withOpacity(0.10)),
+            gradient: _panelGradient,
+            borderRadius: r,
+            border: Border.all(color: Colors.white.withOpacity(.10)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.25),
-                blurRadius: 24,
-                offset: const Offset(0, 14),
+                color: _accent.withOpacity(.10),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
               ),
               BoxShadow(
-                color: kNeon.withOpacity(0.10),
-                blurRadius: 22,
-                offset: const Offset(0, 12),
+                color: Colors.black.withOpacity(.10),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
               ),
             ],
           ),
@@ -360,7 +304,372 @@ class _GlassCard extends StatelessWidget {
       ),
     );
   }
+
+  Widget _header() {
+    return Row(
+      children: [
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          color: _whiteTint,
+        ),
+        Expanded(
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(.10),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(.14),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _accent.withOpacity(.18),
+                        blurRadius: 14,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.home_repair_service_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Flexible(
+                  child: Text(
+                    "خدمات الصيانة",
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.cairo(
+                      color: _whiteTint,
+                      fontSize: 21,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 48),
+      ],
+    );
+  }
+
+  Widget _heroCard() {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(26),
+        gradient: _cardBlueGradient,
+        border: Border.all(
+          color: Colors.white.withOpacity(.14),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _accent.withOpacity(.22),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(.14),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            top: -18,
+            left: -14,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(.05),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -24,
+            right: -8,
+            child: Container(
+              width: 82,
+              height: 82,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(.04),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 10,
+            right: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(999),
+                color: Colors.white.withOpacity(.10),
+                border: Border.all(
+                  color: Colors.white.withOpacity(.14),
+                ),
+              ),
+              child: Text(
+                "واجهة مميزة",
+                style: GoogleFonts.cairo(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(.10),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(.14),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.miscellaneous_services_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "اطلب خدمتك في ثواني",
+                        style: GoogleFonts.cairo(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        "اختار الخدمة • حدّد احتياجك • وابدأ التنفيذ بسهولة",
+                        style: GoogleFonts.cairo(
+                          color: Colors.white.withOpacity(.82),
+                          fontSize: 12.6,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(999),
+                    color: Colors.white.withOpacity(0.10),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.14),
+                    ),
+                  ),
+                  child: Text(
+                    "${services.length} خدمات",
+                    style: GoogleFonts.cairo(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _selectedBar(Map<String, dynamic> selectedItem) {
+    return _glassPanel(
+      radius: BorderRadius.circular(20),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withOpacity(.10),
+              border: Border.all(
+                color: Colors.white.withOpacity(.12),
+              ),
+            ),
+            child: Icon(
+              selectedItem["icon"] as IconData,
+              color: _accentSoft,
+              size: 19,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              "تم اختيار: ${selectedItem["name"]}",
+              style: GoogleFonts.cairo(
+                color: _textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          Icon(
+            Icons.check_circle_rounded,
+            color: _accentSoft,
+            size: 21,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _bottomAddBar(Map<String, dynamic>? selectedItem) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
+      child: _glassPanel(
+        radius: BorderRadius.circular(22),
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  selected == null
+                      ? Icons.info_outline_rounded
+                      : Icons.check_circle_outline_rounded,
+                  color: selected == null ? _textMuted : _accentSoft,
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    selected == null
+                        ? "اختر خدمة للمتابعة"
+                        : "الخدمة المختارة: ${selectedItem?["name"] ?? ""}",
+                    style: GoogleFonts.cairo(
+                      color: selected == null ? _textSecondary : _textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            _BottomCTA(
+              enabled: selected != null && !_opening,
+              loading: _opening,
+              label: selected == null ? "اختر خدمة أولاً" : "طلب الخدمة الآن",
+              onTap: selected == null || _opening
+                  ? null
+                  : () => _openService(selected!),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _serviceCard(Map<String, dynamic> item, bool isSelected) {
+    return _ServiceListTile(
+      title: item["name"] as String,
+      subtitle: item["subtitle"] as String,
+      icon: item["icon"] as IconData,
+      emoji: item["emoji"] as String,
+      selected: isSelected,
+      accentColor: _serviceColor(item["key"] as String),
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() => selected = item["key"] as String);
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedItem = selected == null
+        ? null
+        : services.firstWhere((s) => s["key"] == selected);
+
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        body: Stack(
+          children: [
+            _background(),
+            SafeArea(
+              child: FadeTransition(
+                opacity: _fade,
+                child: ScaleTransition(
+                  scale: _scale,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+                        child: Column(
+                          children: [
+                            _header(),
+                            const SizedBox(height: 12),
+                            _heroCard(),
+                            if (selectedItem != null) ...[
+                              const SizedBox(height: 12),
+                              _selectedBar(selectedItem),
+                            ],
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
+                          itemCount: services.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 12),
+                          itemBuilder: (_, index) {
+                            final item = services[index];
+                            final isSelected = selected == item["key"];
+                            return _serviceCard(item, isSelected);
+                          },
+                        ),
+                      ),
+                      _bottomAddBar(selectedItem),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
+
+// ===================== Widgets =====================
 
 class _ServiceListTile extends StatelessWidget {
   final String title;
@@ -368,6 +677,7 @@ class _ServiceListTile extends StatelessWidget {
   final IconData icon;
   final String emoji;
   final bool selected;
+  final Color accentColor;
   final VoidCallback onTap;
 
   const _ServiceListTile({
@@ -376,64 +686,89 @@ class _ServiceListTile extends StatelessWidget {
     required this.icon,
     required this.emoji,
     required this.selected,
+    required this.accentColor,
     required this.onTap,
   });
 
-  static const Color kNeon = Color(0xFFB7F44A);
-  static const Color kText = Color(0xFFEAF2FF);
-  static const Color kMuted = Color(0xFF9FB0C6);
+  static const Color _textPrimary = Color(0xFFF2F6FB);
+  static const Color _textSecondary = Color(0xFFC9D6EA);
+  // ignore: unused_field
+  static const Color _accent = Color(0xFF1B4F9C);
+  static const Color _accentDark = Color(0xFFE7EEF9);
 
   @override
   Widget build(BuildContext context) {
     return _InkGlass(
       radius: 22,
+      selected: selected,
       onTap: onTap,
-      borderColor:
-          selected ? kNeon.withOpacity(0.65) : Colors.white.withOpacity(0.10),
-      fillOpacity: selected ? 0.06 : 0.04,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         child: Row(
           children: [
-            // Icon bubble
             Container(
-              width: 54,
-              height: 54,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: selected
-                    ? kNeon.withOpacity(0.14)
-                    : Colors.white.withOpacity(0.05),
+                gradient: selected
+                    ? LinearGradient(
+                        colors: [
+                          Colors.white.withOpacity(.22),
+                          accentColor.withOpacity(.22),
+                          accentColor.withOpacity(.42),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
+                color: selected ? null : Colors.white.withOpacity(.08),
                 border: Border.all(
                   color: selected
-                      ? kNeon.withOpacity(0.55)
-                      : Colors.white.withOpacity(0.12),
+                      ? accentColor.withOpacity(.36)
+                      : Colors.white.withOpacity(.12),
                 ),
+                boxShadow: selected
+                    ? [
+                        BoxShadow(
+                          color: accentColor.withOpacity(.22),
+                          blurRadius: 14,
+                          offset: const Offset(0, 6),
+                        ),
+                      ]
+                    : [],
               ),
-              child: Center(
-                child: Icon(
-                  icon,
-                  color: selected ? kNeon : kMuted,
-                  size: 28,
-                ),
+              child: Icon(
+                icon,
+                color: selected ? _accentDark : _textSecondary,
+                size: 26,
               ),
             ),
             const SizedBox(width: 12),
-
-            // Text
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "$emoji  $title",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.cairo(
-                      color: kText,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        emoji,
+                        style: const TextStyle(fontSize: 17),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.cairo(
+                            color: _textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -441,7 +776,7 @@ class _ServiceListTile extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.cairo(
-                      color: kMuted,
+                      color: _textSecondary,
                       fontSize: 12.5,
                       fontWeight: FontWeight.w700,
                     ),
@@ -449,30 +784,27 @@ class _ServiceListTile extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(width: 10),
-
-            // Right indicator
             AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 220),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(999),
                 color: selected
-                    ? kNeon.withOpacity(0.18)
-                    : Colors.white.withOpacity(0.04),
+                    ? accentColor.withOpacity(.16)
+                    : Colors.white.withOpacity(.08),
                 border: Border.all(
                   color: selected
-                      ? kNeon.withOpacity(0.55)
-                      : Colors.white.withOpacity(0.10),
+                      ? accentColor.withOpacity(.30)
+                      : Colors.white.withOpacity(.12),
                 ),
               ),
               child: Icon(
                 selected
                     ? Icons.check_rounded
-                    : Icons.arrow_forward_ios_rounded,
-                size: 16,
-                color: selected ? kNeon : kMuted,
+                    : Icons.arrow_back_ios_new_rounded,
+                size: 15,
+                color: selected ? _accentDark : _textSecondary,
               ),
             ),
           ],
@@ -486,35 +818,64 @@ class _InkGlass extends StatelessWidget {
   final Widget child;
   final double radius;
   final VoidCallback onTap;
-  final Color borderColor;
-  final double fillOpacity;
+  final bool selected;
 
   const _InkGlass({
     required this.child,
     required this.radius,
     required this.onTap,
-    required this.borderColor,
-    required this.fillOpacity,
+    required this.selected,
   });
+
+  static const LinearGradient _selectedGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF17345F),
+      Color(0xFF122B50),
+    ],
+  );
+
+  static const LinearGradient _normalGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF122742),
+      Color(0xFF0D1F35),
+    ],
+  );
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-        child: Material(
-          color: Colors.white.withOpacity(fillOpacity),
-          child: InkWell(
-            onTap: onTap,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(radius),
-                border: Border.all(color: borderColor),
-              ),
-              child: child,
-            ),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(radius),
+        gradient: selected ? _selectedGradient : _normalGradient,
+        border: Border.all(
+          color: selected
+              ? const Color(0xFF1B4F9C).withOpacity(0.28)
+              : Colors.white.withOpacity(0.10),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1B4F9C).withOpacity(selected ? 0.12 : 0.06),
+            blurRadius: selected ? 16 : 10,
+            offset: const Offset(0, 7),
           ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.10),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(radius),
+          onTap: onTap,
+          child: child,
         ),
       ),
     );
@@ -534,107 +895,89 @@ class _BottomCTA extends StatelessWidget {
     required this.onTap,
   });
 
-  static const Color kNeon = Color(0xFFB7F44A);
-  static const Color kBgTop = Color(0xFF0B1220);
+  static const Color _textPrimary = Color(0xFFF7F9FC);
+
+  static const LinearGradient _brandGradient = LinearGradient(
+    colors: [
+      Color(0xFF1B4F99),
+      Color(0xFF245AA6),
+      Color(0xFF153F78),
+    ],
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+  );
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          height: 62,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            color: enabled ? kNeon : Colors.white.withOpacity(0.06),
-            border: Border.all(
-              color: enabled
-                  ? kNeon.withOpacity(0.70)
-                  : Colors.white.withOpacity(0.10),
-            ),
-            boxShadow: [
-              if (enabled)
-                BoxShadow(
-                  color: kNeon.withOpacity(0.22),
-                  blurRadius: 28,
-                  offset: const Offset(0, 16),
-                ),
+    return SizedBox(
+      height: 56,
+      width: double.infinity,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: enabled ? _brandGradient : null,
+          color: enabled ? null : Colors.white.withOpacity(.10),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            if (enabled)
               BoxShadow(
-                color: Colors.black.withOpacity(0.28),
-                blurRadius: 24,
-                offset: const Offset(0, 16),
+                color: const Color(0xFF1B4F9C).withOpacity(.20),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
               ),
-            ],
+          ],
+        ),
+        child: ElevatedButton(
+          onPressed: enabled ? onTap : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            disabledBackgroundColor: Colors.transparent,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
           ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: enabled ? onTap : null,
-              child: Center(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 180),
-                  child: loading
-                      ? Row(
-                          key: const ValueKey("loading"),
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.6,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(kBgTop),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              "جارٍ التنفيذ...",
-                              style: GoogleFonts.cairo(
-                                color: kBgTop,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ],
-                        )
-                      : Text(
-                          label,
-                          key: const ValueKey("label"),
-                          style: GoogleFonts.cairo(
-                            color: enabled ? kBgTop : Colors.white,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 180),
+            child: loading
+                ? Row(
+                    key: const ValueKey("loading"),
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            _textPrimary,
                           ),
                         ),
-                ),
-              ),
-            ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        "جارٍ التنفيذ...",
+                        style: GoogleFonts.cairo(
+                          color: _textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  )
+                : Text(
+                    label,
+                    key: const ValueKey("label"),
+                    style: GoogleFonts.cairo(
+                      color: enabled
+                          ? _textPrimary
+                          : Colors.white.withOpacity(.55),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _GlowBlob extends StatelessWidget {
-  final Color color;
-  final double size;
-
-  const _GlowBlob({required this.color, required this.size});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(color: color, blurRadius: 90, spreadRadius: 30),
-        ],
       ),
     );
   }

@@ -6,7 +6,7 @@ class _HowCard extends StatelessWidget {
   final IconData icon;
   final String text;
   final bool isDark;
-  final VoidCallback? onTap; // ✅ optional
+  final VoidCallback? onTap;
 
   const _HowCard({
     required this.icon,
@@ -18,36 +18,87 @@ class _HowCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ safer than "!" + provides fallback tokens if not found
     final st = context.findAncestorStateOfType<_HomeScreenState>();
 
-    // ---- Fallback tokens (لو اتستخدم برّه HomeScreen لأي سبب) ----
-    final brand = st?.brand ?? const Color.fromARGB(255, 26, 217, 105);
+    // ================== shared palette from home ==================
+    final accent = st?._accent ?? const Color.fromARGB(255, 62, 119, 204);
+    final accentDark =
+        st?._accentDark ?? const Color.fromARGB(255, 49, 115, 201);
+    final accentSoft = st?._accentSoft ?? const Color(0xFFE7EEF9);
+    // ignore: unused_local_variable
+    final panel = st?._panel ?? const Color.fromARGB(255, 29, 102, 204);
+    final textMain = st?._text ?? const Color(0xFFFFFFFF);
+    final ink = st?._ink ?? const Color(0xFFF2F6FB);
+    final muted = st?._muted ?? const Color(0xFFC9D6EA);
 
-    final greenWhiteGradient = st?.greenWhiteGradient ??
-        LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: isDark
-              ? [brand.withOpacity(.92), Colors.white.withOpacity(.16)]
-              : [brand.withOpacity(.96), Colors.white],
-        );
+    final borderColor =
+        isDark ? Colors.white.withOpacity(.12) : accent.withOpacity(.22);
 
-    final greenWhiteGlow = st?.greenWhiteGlow ??
-        [
-          BoxShadow(
-            color: brand.withOpacity(isDark ? .22 : .16),
-            blurRadius: 26,
-            offset: const Offset(0, 14),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? .28 : .08),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
-          ),
-        ];
+    final cardGradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: isDark
+          ? const [
+              Color.fromARGB(255, 24, 54, 100),
+              Color(0xFF143F7C),
+              Color(0xFF10386B),
+            ]
+          : const [
+              Color.fromARGB(255, 61, 127, 225),
+              Color.fromARGB(255, 40, 84, 150),
+              Color.fromARGB(255, 17, 43, 83),
+            ],
+      stops: const [0.0, 0.52, 1.0],
+    );
 
-    final textColor = isDark ? Colors.white : const Color(0xff0B1220);
+    final overlayGradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: isDark
+          ? [
+              Colors.white.withOpacity(.05),
+              Colors.transparent,
+              Colors.black.withOpacity(.06),
+            ]
+          : [
+              accent.withOpacity(.10),
+              Colors.transparent,
+              accentDark.withOpacity(.06),
+            ],
+    );
+
+    final iconBoxGradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: isDark
+          ? [
+              Colors.white.withOpacity(.12),
+              Colors.white.withOpacity(.05),
+            ]
+          : [
+              Colors.white.withOpacity(.16),
+              accent.withOpacity(.18),
+              accentDark.withOpacity(.24),
+            ],
+    );
+
+    final cardGlow = [
+      BoxShadow(
+        color: accent.withOpacity(isDark ? .18 : .12),
+        blurRadius: 24,
+        offset: const Offset(0, 12),
+      ),
+      BoxShadow(
+        color: Colors.black.withOpacity(isDark ? .22 : .12),
+        blurRadius: 18,
+        offset: const Offset(0, 10),
+      ),
+    ];
+
+    final textColor = isDark ? textMain : ink;
+    final iconColor = isDark ? textMain : accentSoft;
+    final underlineColor =
+        isDark ? Colors.white.withOpacity(.20) : muted.withOpacity(.40);
 
     return Expanded(
       child: Semantics(
@@ -60,51 +111,86 @@ class _HowCard extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(20),
               child: Ink(
                 height: 140,
                 decoration: BoxDecoration(
-                  gradient: greenWhiteGradient, // ✅ Green → White
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: brand.withOpacity(.34), width: 1.2),
-                  boxShadow: greenWhiteGlow,
+                  gradient: cardGradient,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: borderColor,
+                    width: 1.15,
+                  ),
+                  boxShadow: cardGlow,
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // ✅ Icon glass container
-                      Container(
-                        width: 58,
-                        height: 58,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(isDark ? .10 : .55),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(isDark ? .14 : .55),
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: overlayGradient,
                           ),
                         ),
-                        child: Icon(
-                          icon,
-                          size: 30,
-                          color: textColor,
-                        ),
                       ),
-                      const SizedBox(height: 12),
-
-                      // ✅ Smart text: tries to fit before ellipsis
-                      _AutoFitTwoLines(
-                        text: text,
-                        style: GoogleFonts.cairo(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 13,
-                          height: 1.15,
-                          color: textColor,
-                        ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 12,
                       ),
-                    ],
-                  ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 58,
+                            height: 58,
+                            decoration: BoxDecoration(
+                              gradient: iconBoxGradient,
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: isDark
+                                    ? Colors.white.withOpacity(.12)
+                                    : accent.withOpacity(.20),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: accent.withOpacity(.12),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              icon,
+                              size: 30,
+                              color: iconColor,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _AutoFitTwoLines(
+                            text: text,
+                            style: GoogleFonts.cairo(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                              height: 1.15,
+                              color: textColor,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Container(
+                            width: 22,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: underlineColor,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -115,7 +201,7 @@ class _HowCard extends StatelessWidget {
   }
 }
 
-/// ✅ Tap animation wrapper (Pro feel)
+/// ================== Tap animation wrapper ==================
 class _HowCardTapScale extends StatefulWidget {
   final Widget child;
   final bool enabled;
@@ -156,9 +242,7 @@ class _HowCardTapScaleState extends State<_HowCardTapScale> {
   }
 }
 
-/// ✅ Auto-fit text (no packages):
-/// - uses LayoutBuilder to choose a smaller font when space is tight
-/// - still has ellipsis as final safety net (prevents red overflow)
+/// ================== Auto-fit text ==================
 class _AutoFitTwoLines extends StatelessWidget {
   final String text;
   final TextStyle style;
@@ -174,7 +258,6 @@ class _AutoFitTwoLines extends StatelessWidget {
       builder: (ctx, c) {
         final base = style.fontSize ?? 13;
 
-        // Try sizes (13 -> 12 -> 11.5 -> 11)
         final candidates = <double>[base, base - 1, base - 1.5, base - 2]
             .where((v) => v >= 10.5)
             .toList();
@@ -200,14 +283,14 @@ class _AutoFitTwoLines extends StatelessWidget {
           }
         }
 
-        // Fallback (guaranteed no overflow)
         return Text(
           text,
           textAlign: TextAlign.center,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: style.copyWith(
-              fontSize: candidates.isNotEmpty ? candidates.last : 11),
+            fontSize: candidates.isNotEmpty ? candidates.last : 11,
+          ),
         );
       },
     );

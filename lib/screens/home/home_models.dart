@@ -165,8 +165,9 @@ class CenterItem {
     final parts =
         n.split(RegExp(r"\s+")).where((e) => e.trim().isNotEmpty).toList();
     if (parts.isEmpty) return "C";
-    if (parts.length == 1)
+    if (parts.length == 1) {
       return parts.first.characters.take(2).toString().toUpperCase();
+    }
     final a = parts.first.characters.take(1).toString();
     final b = parts[1].characters.take(1).toString();
     return (a + b).toUpperCase();

@@ -1,9 +1,9 @@
-import 'package:doctor_car_app/screens/favorites_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 // ignore: unused_import
 import '../managers/favorites_manager.dart';
+import 'favorites_manager.dart';
 import 'service_details_screen.dart';
 
 class FavoritesScreen extends StatelessWidget {

@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../services/socket_service.dart';
@@ -20,6 +23,12 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
   String? technicianId;
   bool _loadingTech = true;
 
+  StreamSubscription<Position>? _positionSub;
+  Position? _lastPosition;
+
+  bool _sharingLocation = false;
+  String? _activeOrderId;
+
   @override
   void initState() {
     super.initState();
@@ -37,11 +46,9 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
     });
 
     if (id == null || id.isEmpty) {
-      // مفيش session
       return;
     }
 
-    // ✅ شغّل socket بالفني الحقيقي
     socket.initTechnician(technicianId: id);
 
     socket.onConnectionChanged((c) {
@@ -60,29 +67,154 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
     });
   }
 
-  void _accept() {
+  Future<bool> _ensureLocationReady() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      _showMsg("افتح خدمة الموقع GPS أولًا");
+      return false;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    if (permission == LocationPermission.denied) {
+      _showMsg("تم رفض صلاحية الموقع");
+      return false;
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      _showMsg("صلاحية الموقع مرفوضة نهائيًا، افتحها من الإعدادات");
+      return false;
+    }
+
+    return true;
+  }
+
+  Future<void> _startLiveLocation(String orderId) async {
+    final ok = await _ensureLocationReady();
+    if (!ok) return;
+
+    await _positionSub?.cancel();
+    _positionSub = null;
+
+    _activeOrderId = orderId;
+
+    try {
+      final current = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      _lastPosition = current;
+
+      socket.emitTechnicianLocation(
+        orderId: orderId,
+        lat: current.latitude,
+        lng: current.longitude,
+        heading: current.heading,
+        speed: current.speed,
+      );
+    } catch (_) {}
+
+    const locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 10,
+    );
+
+    _positionSub = Geolocator.getPositionStream(
+      locationSettings: locationSettings,
+    ).listen((position) {
+      final activeOrder = _activeOrderId;
+      if (activeOrder == null || activeOrder.isEmpty) return;
+
+      if (_lastPosition != null) {
+        final moved = Geolocator.distanceBetween(
+          _lastPosition!.latitude,
+          _lastPosition!.longitude,
+          position.latitude,
+          position.longitude,
+        );
+
+        if (moved < 5) return;
+      }
+
+      _lastPosition = position;
+
+      socket.emitTechnicianLocation(
+        orderId: activeOrder,
+        lat: position.latitude,
+        lng: position.longitude,
+        heading: position.heading,
+        speed: position.speed,
+      );
+    });
+
+    if (!mounted) return;
+    setState(() {
+      _sharingLocation = true;
+    });
+
+    _showMsg("بدأ إرسال موقع الفني");
+  }
+
+  Future<void> _stopLiveLocation() async {
+    await _positionSub?.cancel();
+    _positionSub = null;
+    _activeOrderId = null;
+
+    if (!mounted) return;
+    setState(() {
+      _sharingLocation = false;
+    });
+  }
+
+  Future<void> _accept() async {
     final id = (latestOrder?["_id"] ?? latestOrder?["id"] ?? "").toString();
     if (id.isEmpty) return;
 
     socket.acceptOrder(id);
+    socket.joinOrderRoom(id);
 
+    await _startLiveLocation(id);
+
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-          content: Text("تم إرسال قبول الطلب", style: GoogleFonts.cairo())),
+        content: Text(
+          "تم إرسال قبول الطلب وبدأ التتبع",
+          style: GoogleFonts.cairo(),
+        ),
+      ),
     );
   }
 
-  void _reject() {
+  Future<void> _reject() async {
     final id = (latestOrder?["_id"] ?? latestOrder?["id"] ?? "").toString();
     if (id.isEmpty) return;
 
     socket.rejectOrder(id);
+    await _stopLiveLocation();
 
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("تم رفض الطلب", style: GoogleFonts.cairo())),
+      SnackBar(
+        content: Text(
+          "تم رفض الطلب",
+          style: GoogleFonts.cairo(),
+        ),
+      ),
     );
 
     setState(() => latestOrder = null);
+  }
+
+  void _showMsg(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg, style: GoogleFonts.cairo())),
+    );
   }
 
   @override
@@ -176,6 +308,19 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
                     "TechnicianId: $technicianId",
                     style:
                         GoogleFonts.cairo(color: Colors.white38, fontSize: 12),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _sharingLocation
+                        ? "جاري إرسال الموقع live"
+                        : "إرسال الموقع متوقف",
+                    style: GoogleFonts.cairo(
+                      color: _sharingLocation
+                          ? Colors.greenAccent
+                          : Colors.orangeAccent,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -306,5 +451,11 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _positionSub?.cancel();
+    super.dispose();
   }
 }

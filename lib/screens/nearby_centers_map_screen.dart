@@ -8,7 +8,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'package:doctor_car_app/config/api_config.dart';
+import '../config/api_config.dart';
 
 class NearbyCentersMapScreen extends StatefulWidget {
   final bool isArabic;

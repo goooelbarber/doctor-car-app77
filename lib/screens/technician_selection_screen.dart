@@ -1,12 +1,12 @@
 // ignore_for_file: depend_on_referenced_packages, use_build_context_synchronously
 
 import 'dart:convert';
-import 'package:doctor_car_app/screens/tracking/tracking_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
+import 'tracking/tracking_screen.dart';
 
 class TechnicianSelectionScreen extends StatefulWidget {
   final String orderId;
@@ -44,9 +44,6 @@ class _TechnicianSelectionScreenState extends State<TechnicianSelectionScreen>
     )..forward();
   }
 
-  // --------------------------------------------------------------
-  // ✔ اختيار الفني → حفظه في السيرفر → فتح صفحة التتبع
-  // --------------------------------------------------------------
   Future<void> _selectTechnician(Map tech) async {
     try {
       final url = Uri.parse("${ApiConfig.orders}/${widget.orderId}/assign");
@@ -67,6 +64,9 @@ class _TechnicianSelectionScreenState extends State<TechnicianSelectionScreen>
               orderId: widget.orderId,
               userId: widget.userId,
               baseUrl: ApiConfig.baseUrl,
+              serviceType: '',
+              userLat: widget.lat,
+              userLng: widget.lng,
             ),
           ),
         );

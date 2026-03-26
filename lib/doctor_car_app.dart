@@ -1,16 +1,17 @@
-import 'package:doctor_car_app/screens/screens/services/help_now_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 // 🎯 استيراد الشاشات الأساسية
-import 'package:doctor_car_app/screens/splash_screen.dart';
-import 'package:doctor_car_app/screens/login_screen.dart';
+
 import 'screens/home_screen.dart';
 // ignore: unused_import
 
 // 📦 مزود اللغة (Locale Provider)
 import 'providers/locale_provider.dart';
+import 'screens/login_screen.dart';
+import 'screens/screens/services/help_now_screen.dart';
+import 'screens/splash_screen.dart';
 
 // 💡 الثوابت والألوان
 const Color kPrimaryColor = Color(0xFF0D47A1);

@@ -22,6 +22,7 @@ class _TechnicianMapScreenState extends State<TechnicianMapScreen> {
   bool _loading = false;
 
   List<dynamic> _technicians = [];
+  // ignore: prefer_final_fields
   Map<String, LatLng> _technicianPositions = {};
 
   IO.Socket? _socket;

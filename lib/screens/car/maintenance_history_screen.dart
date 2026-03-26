@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:doctor_car_app/services/api_service.dart';
-import 'package:doctor_car_app/screens/car/edit_maintenance_screen.dart';
+
+import '../../services/api_service.dart';
+import 'edit_maintenance_screen.dart';
 
 class MaintenanceHistoryScreen extends StatefulWidget {
   final String vehicleId;

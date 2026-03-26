@@ -1,4 +1,4 @@
-import 'package:doctor_car_app/models/product_model.dart';
+import '../models/product_model.dart';
 
 class WishlistService {
   static final List<ProductModel> _wishlist = [];

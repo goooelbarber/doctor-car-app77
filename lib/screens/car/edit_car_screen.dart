@@ -4,7 +4,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:doctor_car_app/services/api_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class EditVehicleScreen extends StatefulWidget {
   final Map vehicle;
@@ -18,7 +17,8 @@ class EditVehicleScreen extends StatefulWidget {
 class _EditVehicleScreenState extends State<EditVehicleScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  List brands = [];
+  // ✅ brands هنا لازم تكون List<String> لأن ApiService.getCarBrands بيرجع Strings
+  List<String> brands = [];
   List<String> models = [];
   List<String> years = [];
 
@@ -37,9 +37,9 @@ class _EditVehicleScreenState extends State<EditVehicleScreen> {
   final plateCtrl = TextEditingController();
   final chassisCtrl = TextEditingController();
 
-  final fuelTypes = ["بنزين", "ديزل", "هايبرد", "كهرباء"];
-  final conditions = ["ممتازة", "جيدة جدًا", "جيدة", "تحتاج صيانة"];
-  final colors = ["أبيض", "أسود", "فضي", "رمادي", "أزرق", "أحمر", "ذهبي"];
+  final fuelTypes = const ["بنزين", "ديزل", "هايبرد", "كهرباء"];
+  final conditions = const ["ممتازة", "جيدة جدًا", "جيدة", "تحتاج صيانة"];
+  final colors = const ["أبيض", "أسود", "فضي", "رمادي", "أزرق", "أحمر", "ذهبي"];
 
   @override
   void initState() {
@@ -51,57 +51,82 @@ class _EditVehicleScreenState extends State<EditVehicleScreen> {
   // 🟦 تحميل البيانات الأساسية
   // ============================================================
   Future<void> _loadInitialData() async {
-    loadingBrands = true;
-    if (mounted) setState(() {}); // ✅ إضافة بسيطة
+    setState(() => loadingBrands = true);
 
-    brands = await ApiService.getCarBrands();
+    try {
+      brands = await ApiService.getCarBrands();
 
-    selectedBrand = widget.vehicle["brand"];
-    selectedModel = widget.vehicle["model"];
-    selectedYear = widget.vehicle["year"];
-    selectedFuel = widget.vehicle["fuel"];
-    selectedCondition = widget.vehicle["condition"];
-    selectedColor = widget.vehicle["color"];
+      selectedBrand = widget.vehicle["brand"]?.toString();
+      selectedModel = widget.vehicle["model"]?.toString();
+      selectedYear = widget.vehicle["year"]?.toString();
+      selectedFuel = widget.vehicle["fuel"]?.toString();
+      selectedCondition = widget.vehicle["condition"]?.toString();
+      selectedColor = widget.vehicle["color"]?.toString();
 
-    plateCtrl.text = widget.vehicle["plateNumber"];
-    chassisCtrl.text = widget.vehicle["chassisNumber"];
+      plateCtrl.text = widget.vehicle["plateNumber"]?.toString() ?? "";
+      chassisCtrl.text = widget.vehicle["chassisNumber"]?.toString() ?? "";
 
-    await _loadModels();
-    await _loadYears();
-
-    loadingBrands = false;
-    if (mounted) setState(() {}); // ✅ إضافة بسيطة
+      await _loadModels();
+      await _loadYears();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("تعذر تحميل بيانات المركبة")),
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() => loadingBrands = false);
+    }
   }
 
   // ============================================================
   // 🟩 جلب الموديلات
   // ============================================================
   Future<void> _loadModels() async {
-    if (selectedBrand == null) return;
-    loadingModels = true;
-    if (mounted) setState(() {}); // ✅ إضافة بسيطة
+    if (selectedBrand == null || selectedBrand!.isEmpty) return;
 
-    final data = await ApiService.getModelsByBrand(selectedBrand!);
-    models = List<String>.from(data);
+    setState(() => loadingModels = true);
 
-    loadingModels = false;
-    if (mounted) setState(() {}); // ✅ إضافة بسيطة
+    try {
+      final data = await ApiService.getModelsByBrand(selectedBrand!);
+      models = List<String>.from(data);
+
+      // ✅ لو الموديل الحالي مش موجود في القائمة
+      if (selectedModel != null && !models.contains(selectedModel)) {
+        selectedModel = null;
+      }
+    } catch (_) {
+      models = [];
+    } finally {
+      if (!mounted) return;
+      setState(() => loadingModels = false);
+    }
   }
 
   // ============================================================
   // 🟧 جلب السنوات
   // ============================================================
   Future<void> _loadYears() async {
-    if (selectedBrand == null || selectedModel == null) return;
+    if (selectedBrand == null ||
+        selectedBrand!.isEmpty ||
+        selectedModel == null ||
+        selectedModel!.isEmpty) return;
 
-    loadingYears = true;
-    if (mounted) setState(() {}); // ✅ إضافة بسيطة
+    setState(() => loadingYears = true);
 
-    final data = await ApiService.getYears(selectedBrand!, selectedModel!);
-    years = List<String>.from(data.map((e) => e.toString()));
+    try {
+      final data = await ApiService.getYears(selectedBrand!, selectedModel!);
+      years = List<String>.from(data.map((e) => e.toString()));
 
-    loadingYears = false;
-    if (mounted) setState(() {}); // ✅ إضافة بسيطة
+      if (selectedYear != null && !years.contains(selectedYear)) {
+        selectedYear = null;
+      }
+    } catch (_) {
+      years = [];
+    } finally {
+      if (!mounted) return;
+      setState(() => loadingYears = false);
+    }
   }
 
   // ============================================================
@@ -110,61 +135,67 @@ class _EditVehicleScreenState extends State<EditVehicleScreen> {
   Future<void> _saveEdit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    saving = true;
-    if (mounted) setState(() {}); // ✅
-
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString("token");
-
-    // ✅ إضافة تمنع crash لو token null
-    if (token == null) {
-      saving = false;
-      if (mounted) setState(() {});
+    final vehicleId = widget.vehicle["_id"]?.toString();
+    if (vehicleId == null || vehicleId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("⚠️ برجاء تسجيل الدخول مرة أخرى"),
+          content: Text("⚠️ معرف المركبة غير صحيح"),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
-    final res = await ApiService.updateVehicle(
-      token,
-      vehicleId: widget.vehicle["_id"],
-      brand: selectedBrand,
-      model: selectedModel,
-      year: selectedYear,
-      fuel: selectedFuel,
-      condition: selectedCondition,
-      plateNumber: plateCtrl.text.trim(),
-      color: selectedColor,
-      chassisNumber: chassisCtrl.text.trim(),
-      id: widget.vehicle["_id"],
-    );
+    setState(() => saving = true);
 
-    saving = false;
-    if (mounted) setState(() {}); // ✅
-
-    if (res["error"] == true) {
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(res["message"]), backgroundColor: Colors.red),
+    try {
+      // ✅ ApiService.updateVehicle في النسخة الجديدة بدون token
+      final res = await ApiService.updateVehicle(
+        vehicleId: vehicleId,
+        brand: selectedBrand,
+        model: selectedModel,
+        year: selectedYear,
+        fuel: selectedFuel,
+        condition: selectedCondition,
+        plateNumber: plateCtrl.text.trim(),
+        color: selectedColor,
+        chassisNumber: chassisCtrl.text.trim(),
       );
-    } else {
-      // ignore: use_build_context_synchronously
+
+      if (!mounted) return;
+
+      if (res["error"] == true || res["success"] == false) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(res["message"]?.toString() ?? "فشل التحديث"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("🚗 تم تحديث بيانات السيارة بنجاح"),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+    } catch (_) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text("🚗 تم تحديث بيانات السيارة بنجاح"),
-            backgroundColor: Colors.green),
+          content: Text("تعذر الاتصال بالسيرفر"),
+          backgroundColor: Colors.red,
+        ),
       );
-      // ignore: use_build_context_synchronously
-      Navigator.pop(context, true);
+    } finally {
+      if (!mounted) return;
+      setState(() => saving = false);
     }
   }
 
   // ============================================================
-  // 🟦 تصميم Dropdown جاهز
+  // 🟦 Dropdown Widget
   // ============================================================
   Widget buildDropdown({
     required String label,
@@ -172,7 +203,8 @@ class _EditVehicleScreenState extends State<EditVehicleScreen> {
     required String? value,
     required List<String> items,
     required bool isLoading,
-    required Function(String?) onChanged,
+    required void Function(String?) onChanged,
+    bool requiredField = true,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -180,17 +212,17 @@ class _EditVehicleScreenState extends State<EditVehicleScreen> {
         Text(label, style: const TextStyle(fontSize: 16, color: Colors.white)),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
-          initialValue: value,
+          value: (value != null && items.contains(value)) ? value : null,
           style: const TextStyle(color: Colors.white),
           dropdownColor: Colors.black87,
           decoration: _inputStyle(label, icon),
           items: isLoading
-              ? []
+              ? const []
               : items
                   .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                   .toList(),
           onChanged: isLoading ? null : onChanged,
-          validator: (v) => v == null ? "مطلوب" : null,
+          validator: requiredField ? (v) => v == null ? "مطلوب" : null : null,
         ),
         const SizedBox(height: 14),
       ],
@@ -198,7 +230,7 @@ class _EditVehicleScreenState extends State<EditVehicleScreen> {
   }
 
   // ============================================================
-  // 🎨 ديزاين Input
+  // 🎨 Input style
   // ============================================================
   InputDecoration _inputStyle(String hint, IconData icon) {
     return InputDecoration(
@@ -226,7 +258,7 @@ class _EditVehicleScreenState extends State<EditVehicleScreen> {
   }
 
   // ============================================================
-  // 📱 واجهة كاملة
+  // UI
   // ============================================================
   @override
   Widget build(BuildContext context) {
@@ -235,15 +267,14 @@ class _EditVehicleScreenState extends State<EditVehicleScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-
-        // ✅ إضافة فقط: سهم رجوع مضمون (بدون حذف)
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-
-        title: const Text("تعديل بيانات المركبة",
-            style: TextStyle(color: Colors.white)),
+        title: const Text(
+          "تعديل بيانات المركبة",
+          style: TextStyle(color: Colors.white),
+        ),
         centerTitle: true,
       ),
       body: Stack(
@@ -282,16 +313,15 @@ class _EditVehicleScreenState extends State<EditVehicleScreen> {
                           label: "الماركة",
                           icon: FontAwesomeIcons.car,
                           value: selectedBrand,
-                          items: brands
-                              .map<String>((e) => e["name"].toString())
-                              .toList(),
+                          items: brands,
                           isLoading: loadingBrands,
                           onChanged: (v) async {
                             selectedBrand = v;
                             selectedModel = null;
                             selectedYear = null;
                             await _loadModels();
-                            if (mounted) setState(() {}); // ✅
+                            await _loadYears();
+                            if (mounted) setState(() {});
                           },
                         ),
                         buildDropdown(
@@ -300,10 +330,11 @@ class _EditVehicleScreenState extends State<EditVehicleScreen> {
                           value: selectedModel,
                           items: models,
                           isLoading: loadingModels,
-                          onChanged: (v) {
+                          onChanged: (v) async {
                             selectedModel = v;
-                            _loadYears();
-                            if (mounted) setState(() {}); // ✅
+                            selectedYear = null;
+                            await _loadYears();
+                            if (mounted) setState(() {});
                           },
                         ),
                         buildDropdown(
@@ -344,19 +375,25 @@ class _EditVehicleScreenState extends State<EditVehicleScreen> {
                         _buildTextField("رقم الهيكل (الشاصي)",
                             FontAwesomeIcons.hashtag, chassisCtrl),
                         const SizedBox(height: 15),
-                        ElevatedButton(
-                          onPressed: saving ? null : _saveEdit,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.amber,
-                            minimumSize: const Size(double.infinity, 55),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 55,
+                          child: ElevatedButton(
+                            onPressed: saving ? null : _saveEdit,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
                             ),
-                          ),
-                          child: Text(
-                            saving ? "جاري التحديث..." : "حفظ التعديلات",
-                            style: const TextStyle(
-                                fontSize: 18, color: Colors.black),
+                            child: Text(
+                              saving ? "جاري التحديث..." : "حفظ التعديلات",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -382,7 +419,7 @@ class _EditVehicleScreenState extends State<EditVehicleScreen> {
           controller: controller,
           style: const TextStyle(color: Colors.white),
           decoration: _inputStyle(label, icon),
-          validator: (v) => v!.isEmpty ? "مطلوب" : null,
+          validator: (v) => (v == null || v.trim().isEmpty) ? "مطلوب" : null,
         ),
         const SizedBox(height: 14),
       ],

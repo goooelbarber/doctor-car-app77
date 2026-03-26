@@ -1,10 +1,11 @@
 // 📁 lib/screens/car/widgets/car_selector.dart
 
-import 'package:doctor_car_app/models/car_brand.dart';
-import 'package:doctor_car_app/models/car_model_name.dart';
-import 'package:doctor_car_app/services/car_types_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import '../../../models/car_brand.dart';
+import '../../../models/car_model_name.dart';
+import '../../../services/car_types_service.dart';
 
 class CarSelector extends StatefulWidget {
   final bool darkMode;

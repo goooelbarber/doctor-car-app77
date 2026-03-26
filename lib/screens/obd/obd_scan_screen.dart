@@ -38,16 +38,13 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
   String? _error;
   BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
 
-  // ✅ إضافة: تبديل فلترة الأجهزة (OBD فقط / كل الأجهزة)
   bool _showAllDevices = false;
 
-  // ✅ إضافة: مدة Scan ثابتة
   static const Duration _scanDuration = Duration(seconds: 7);
 
   bool get isArabic => widget.isArabic;
   bool get isDark => widget.isDarkMode;
 
-  // ================== TOKENS (Doctor Car Neon) ==================
   Color get brand => const Color.fromARGB(255, 26, 217, 105);
   Color get brand2 => Color.lerp(brand, const Color(0xff0B1220), 0.22)!;
   Color get brand3 => Color.lerp(brand, Colors.white, 0.18)!;
@@ -129,8 +126,7 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
   @override
   void initState() {
     super.initState();
-    _adapterState =
-        FlutterBluePlus.adapterStateNow; // ✅ إضافة: قيمة حالية مباشرة
+    _adapterState = FlutterBluePlus.adapterStateNow;
     _listenAdapter();
     _boot();
   }
@@ -170,7 +166,6 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
     await _startScan();
   }
 
-  // ✅ تحسين: صلاحيات Android 12/13 + Notifications
   Future<bool> _ensureBlePermissions() async {
     try {
       if (Platform.isAndroid) {
@@ -178,7 +173,7 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
           Permission.bluetoothScan,
           Permission.bluetoothConnect,
           Permission.locationWhenInUse,
-          Permission.notification, // ✅ Android 13+
+          Permission.notification,
         ];
 
         final statuses = await perms.request();
@@ -195,12 +190,9 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
           return false;
         }
 
-        // location مش لازم دائمًا على Android 12+ لو usesPermissionFlags=neverForLocation
-        // لكن بنطلبها عشان بعض الأجهزة/الرومات بتشترطها
         final locOk =
             statuses[Permission.locationWhenInUse]?.isGranted ?? false;
         if (!locOk) {
-          // مش هنقف التطبيق، بس ننبه المستخدم
           _setError(tr(
             "ملاحظة: بعض الأجهزة تحتاج تفعيل Location علشان تظهر الأجهزة.",
             "Note: Some devices require Location enabled to discover BLE devices.",
@@ -210,7 +202,6 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
         return true;
       }
 
-      // iOS: FlutterBluePlus بيتعامل غالبًا بدون Permission Handler
       return true;
     } catch (e) {
       _setError(e.toString());
@@ -222,9 +213,7 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
     if (Platform.isAndroid) {
       try {
         await FlutterBluePlus.turnOn();
-      } catch (_) {
-        // user رفض أو الجهاز لا يدعم turnOn
-      }
+      } catch (_) {}
     }
   }
 
@@ -251,7 +240,7 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
         await FlutterBluePlus.stopScan();
       } catch (_) {}
 
-      _scanSub?.cancel();
+      await _scanSub?.cancel();
 
       _scanSub = FlutterBluePlus.scanResults.listen((list) {
         if (!mounted) return;
@@ -260,17 +249,14 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
         for (final r in list) {
           final id = r.device.remoteId.toString();
 
-          // ✅ تحسين الاسم المعروض
           final name = r.device.platformName.trim();
           final adv = r.advertisementData.advName.trim();
           final combined = "${name.toLowerCase()} ${adv.toLowerCase()}";
 
           final looksLikeObd = _looksLikeObd(combined);
 
-          // ✅ لو showAllDevices = true اعرض كله
           if (!_showAllDevices && !looksLikeObd) continue;
 
-          // ✅ تحديث/إضافة
           final prev = _devices[id];
           if (prev == null || prev.rssi != r.rssi) {
             _devices[id] = r;
@@ -278,7 +264,9 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
           }
         }
 
-        if (changed) setState(() {});
+        if (changed && mounted) {
+          setState(() {});
+        }
       });
 
       await FlutterBluePlus.startScan(timeout: _scanDuration);
@@ -289,12 +277,13 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
         await FlutterBluePlus.stopScan();
       } catch (_) {}
 
-      if (mounted) setState(() => _scanning = false);
+      if (mounted) {
+        setState(() => _scanning = false);
+      }
     }
   }
 
   bool _looksLikeObd(String combined) {
-    // ✅ تحسين الفلترة (OBD BLE Adapters)
     return combined.contains('obd') ||
         combined.contains('elm') ||
         combined.contains('vgate') ||
@@ -325,7 +314,6 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
       } catch (_) {}
 
       await _service.connect(device);
-
       final snap = await _service.scanOnce();
 
       if (!mounted) return;
@@ -339,14 +327,16 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
             dtc: snap.dtc,
             rpm: snap.rpm,
             coolant: snap.coolant,
-            service: _service, // ✅ مهم
+            service: _service,
           ),
         ),
       );
     } catch (e) {
       _setError(_prettyBleError(e));
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -391,7 +381,6 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
     await openAppSettings();
   }
 
-  // ================== UI ==================
   @override
   Widget build(BuildContext context) {
     final results = _sortedResults;
@@ -406,7 +395,8 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
             body: Stack(
               children: [
                 Container(
-                    decoration: BoxDecoration(gradient: screenBgGradient)),
+                  decoration: BoxDecoration(gradient: screenBgGradient),
+                ),
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -465,8 +455,11 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
               border: Border.all(color: Colors.white.withOpacity(.10)),
               boxShadow: greenGlow,
             ),
-            child: const Icon(Icons.bluetooth_searching,
-                color: Colors.black, size: 18),
+            child: const Icon(
+              Icons.bluetooth_searching,
+              color: Colors.black,
+              size: 18,
+            ),
           ),
           const SizedBox(width: 10),
           Text(
@@ -480,7 +473,6 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
         ],
       ),
       actions: [
-        // ✅ إضافة: Toggle إظهار كل الأجهزة / OBD فقط
         IconButton(
           onPressed: _loading
               ? null
@@ -527,7 +519,8 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
                   (on ? brand : Colors.orange).withOpacity(isDark ? .18 : .10),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                  color: (on ? brand : Colors.orange).withOpacity(.25)),
+                color: (on ? brand : Colors.orange).withOpacity(.25),
+              ),
             ),
             child: Icon(
               on ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
@@ -687,7 +680,8 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: brand.withOpacity(.35), width: 1.4),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
               icon: const Icon(Icons.refresh, size: 18),
               label: Text(
@@ -846,7 +840,6 @@ class _ObdScanScreenState extends State<ObdScanScreen> {
     );
   }
 
-  // ✅ تحسين: زر Gradient فعلي بدل زر شفاف
   Widget _scanCtaButton() {
     final disabled = _loading || _scanning;
 

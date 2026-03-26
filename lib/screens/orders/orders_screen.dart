@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:doctor_car_app/services/orders/orders_store.dart';
+
+import '../../services/orders/orders_store.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});

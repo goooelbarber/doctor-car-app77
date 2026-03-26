@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:doctor_car_app/services/socket_service.dart';
-import 'package:doctor_car_app/screens/chat/technician_chat_screen.dart';
+import '../../services/socket_service.dart';
+import '../chat/technician_chat_screen.dart';
 
 class IncomingRequestScreen extends StatefulWidget {
   final String technicianToken;
