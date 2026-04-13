@@ -25,9 +25,6 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
   late final Animation<double> _fade;
   late final Animation<double> _scale;
 
-  // =========================
-  // Doctor Car Dark Blue Theme
-  // =========================
   static const Color _bg0 = Color(0xFF081A36);
   static const Color _bg1 = Color(0xFF0B2348);
   static const Color _bg2 = Color(0xFF040D1D);
@@ -41,12 +38,7 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
   static const Color _textPrimary = Color(0xFFF2F6FB);
   static const Color _textSecondary = Color(0xFFC9D6EA);
   static const Color _textMuted = Color(0xFF93A9C9);
-  // ignore: unused_field
-  static const Color _textOnDark = Colors.white;
-  // ignore: unused_field
-  static const Color _danger = Color(0xFFD96C6C);
 
-  // ignore: unused_field
   static const LinearGradient _brandGradient = LinearGradient(
     colors: [
       Color(0xFF1B4F99),
@@ -67,9 +59,9 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
     ],
   );
 
-  static const LinearGradient _cardBlueGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
+  static const LinearGradient _heroGradient = LinearGradient(
+    begin: Alignment.topRight,
+    end: Alignment.bottomLeft,
     colors: [
       Color(0xFF1D4F99),
       Color(0xFF163F7E),
@@ -84,28 +76,28 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
       "name": "صيانة",
       "subtitle": "ميكانيكا • كهرباء • فحص شامل",
       "icon": Icons.build_circle_rounded,
-      "emoji": "🛠️",
+      "image": "assets/images/44.png",
     },
     {
       "key": "wash",
       "name": "غسيل و عناية",
       "subtitle": "غسيل خارجي • داخلي • تلميع",
       "icon": Icons.local_car_wash_rounded,
-      "emoji": "🚿",
+      "image": "assets/images/q.png",
     },
     {
       "key": "accessories",
       "name": "إكسسوارات",
       "subtitle": "مستلزمات وإضافات للسيارة",
       "icon": Icons.shopping_bag_rounded,
-      "emoji": "🛍️",
+      "image": "assets/images/444.png",
     },
     {
       "key": "check",
       "name": "كشف",
       "subtitle": "تشخيص سريع ودقيق للأعطال",
       "icon": Icons.assignment_rounded,
-      "emoji": "🧾",
+      "image": "assets/images/qq.png",
     },
   ];
 
@@ -189,13 +181,13 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
   Color _serviceColor(String key) {
     switch (key) {
       case "maintenance":
-        return const Color(0xFF2A5DAD);
+        return const Color(0xFF59A7FF);
       case "wash":
-        return const Color(0xFF1E4D96);
+        return const Color(0xFF5ED9E6);
       case "accessories":
-        return const Color(0xFF355F9E);
+        return const Color(0xFF8A9EFF);
       case "check":
-        return const Color(0xFF244C88);
+        return const Color(0xFF7ED39A);
       default:
         return _accent;
     }
@@ -319,11 +311,11 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 42,
-                  height: 42,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(.10),
+                    borderRadius: BorderRadius.circular(14),
+                    gradient: _brandGradient,
                     border: Border.all(
                       color: Colors.white.withOpacity(.14),
                     ),
@@ -337,7 +329,7 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
                   child: const Icon(
                     Icons.home_repair_service_rounded,
                     color: Colors.white,
-                    size: 20,
+                    size: 22,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -364,8 +356,8 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
   Widget _heroCard() {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(26),
-        gradient: _cardBlueGradient,
+        borderRadius: BorderRadius.circular(28),
+        gradient: _heroGradient,
         border: Border.all(
           color: Colors.white.withOpacity(.14),
         ),
@@ -421,7 +413,7 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
                 ),
               ),
               child: Text(
-                "واجهة مميزة",
+                "واجهة احترافية",
                 style: GoogleFonts.cairo(
                   color: Colors.white,
                   fontSize: 11,
@@ -435,10 +427,10 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
             child: Row(
               children: [
                 Container(
-                  width: 52,
-                  height: 52,
+                  width: 54,
+                  height: 54,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(18),
                     color: Colors.white.withOpacity(.10),
                     border: Border.all(
                       color: Colors.white.withOpacity(.14),
@@ -447,7 +439,7 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
                   child: const Icon(
                     Icons.miscellaneous_services_rounded,
                     color: Colors.white,
-                    size: 24,
+                    size: 26,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -456,7 +448,7 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "اطلب خدمتك في ثواني",
+                        "اختر نوع الخدمة المناسبة",
                         style: GoogleFonts.cairo(
                           color: Colors.white,
                           fontSize: 17,
@@ -465,7 +457,7 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        "اختار الخدمة • حدّد احتياجك • وابدأ التنفيذ بسهولة",
+                        "كل خدمة بتصميم مميز وصورة واضحة لتجربة أفضل",
                         style: GoogleFonts.cairo(
                           color: Colors.white.withOpacity(.82),
                           fontSize: 12.6,
@@ -511,18 +503,15 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
       child: Row(
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withOpacity(.10),
-              border: Border.all(
-                color: Colors.white.withOpacity(.12),
-              ),
+              borderRadius: BorderRadius.circular(14),
+              gradient: _brandGradient,
             ),
             child: Icon(
               selectedItem["icon"] as IconData,
-              color: _accentSoft,
+              color: Colors.white,
               size: 19,
             ),
           ),
@@ -600,7 +589,7 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
       title: item["name"] as String,
       subtitle: item["subtitle"] as String,
       icon: item["icon"] as IconData,
-      emoji: item["emoji"] as String,
+      imagePath: item["image"] as String,
       selected: isSelected,
       accentColor: _serviceColor(item["key"] as String),
       onTap: () {
@@ -669,13 +658,11 @@ class _MaintenanceServicesScreenState extends State<MaintenanceServicesScreen>
   }
 }
 
-// ===================== Widgets =====================
-
 class _ServiceListTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final IconData icon;
-  final String emoji;
+  final String imagePath;
   final bool selected;
   final Color accentColor;
   final VoidCallback onTap;
@@ -684,7 +671,7 @@ class _ServiceListTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.icon,
-    required this.emoji,
+    required this.imagePath,
     required this.selected,
     required this.accentColor,
     required this.onTap,
@@ -692,83 +679,38 @@ class _ServiceListTile extends StatelessWidget {
 
   static const Color _textPrimary = Color(0xFFF2F6FB);
   static const Color _textSecondary = Color(0xFFC9D6EA);
-  // ignore: unused_field
-  static const Color _accent = Color(0xFF1B4F9C);
   static const Color _accentDark = Color(0xFFE7EEF9);
 
   @override
   Widget build(BuildContext context) {
     return _InkGlass(
-      radius: 22,
+      radius: 24,
       selected: selected,
       onTap: onTap,
+      accentColor: accentColor,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         child: Row(
           children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: selected
-                    ? LinearGradient(
-                        colors: [
-                          Colors.white.withOpacity(.22),
-                          accentColor.withOpacity(.22),
-                          accentColor.withOpacity(.42),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : null,
-                color: selected ? null : Colors.white.withOpacity(.08),
-                border: Border.all(
-                  color: selected
-                      ? accentColor.withOpacity(.36)
-                      : Colors.white.withOpacity(.12),
-                ),
-                boxShadow: selected
-                    ? [
-                        BoxShadow(
-                          color: accentColor.withOpacity(.22),
-                          blurRadius: 14,
-                          offset: const Offset(0, 6),
-                        ),
-                      ]
-                    : [],
-              ),
-              child: Icon(
-                icon,
-                color: selected ? _accentDark : _textSecondary,
-                size: 26,
-              ),
+            _IconBadge(
+              icon: icon,
+              accentColor: accentColor,
+              selected: selected,
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        emoji,
-                        style: const TextStyle(fontSize: 17),
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.cairo(
-                            color: _textPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.cairo(
+                      color: _textPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -779,17 +721,24 @@ class _ServiceListTile extends StatelessWidget {
                       color: _textSecondary,
                       fontSize: 12.5,
                       fontWeight: FontWeight.w700,
+                      height: 1.45,
                     ),
                   ),
                 ],
               ),
             ),
+            const SizedBox(width: 12),
+            _ServiceImageBox(
+              imagePath: imagePath,
+              selected: selected,
+            ),
             const SizedBox(width: 10),
             AnimatedContainer(
               duration: const Duration(milliseconds: 220),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(999),
+                borderRadius: BorderRadius.circular(12),
                 color: selected
                     ? accentColor.withOpacity(.16)
                     : Colors.white.withOpacity(.08),
@@ -814,17 +763,134 @@ class _ServiceListTile extends StatelessWidget {
   }
 }
 
+class _IconBadge extends StatelessWidget {
+  final IconData icon;
+  final Color accentColor;
+  final bool selected;
+
+  const _IconBadge({
+    required this.icon,
+    required this.accentColor,
+    required this.selected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 58,
+      height: 58,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: selected
+              ? [
+                  accentColor.withOpacity(.34),
+                  accentColor.withOpacity(.14),
+                ]
+              : [
+                  Colors.white.withOpacity(.10),
+                  Colors.white.withOpacity(.05),
+                ],
+        ),
+        border: Border.all(
+          color: selected
+              ? accentColor.withOpacity(.30)
+              : Colors.white.withOpacity(.12),
+        ),
+        boxShadow: selected
+            ? [
+                BoxShadow(
+                  color: accentColor.withOpacity(.20),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : [],
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Container(
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: selected ? accentColor : Colors.white54,
+              ),
+            ),
+          ),
+          Icon(
+            icon,
+            color: Colors.white,
+            size: 28,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ServiceImageBox extends StatelessWidget {
+  final String imagePath;
+  final bool selected;
+
+  const _ServiceImageBox({
+    required this.imagePath,
+    required this.selected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      width: 76,
+      height: 76,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        color: Colors.white.withOpacity(.07),
+        border: Border.all(
+          color: selected
+              ? Colors.white.withOpacity(.20)
+              : Colors.white.withOpacity(.10),
+        ),
+      ),
+      padding: const EdgeInsets.all(8),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Image.asset(
+          imagePath,
+          fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) => Center(
+            child: Icon(
+              Icons.image_not_supported_outlined,
+              color: Colors.white.withOpacity(.70),
+              size: 28,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _InkGlass extends StatelessWidget {
   final Widget child;
   final double radius;
   final VoidCallback onTap;
   final bool selected;
+  final Color accentColor;
 
   const _InkGlass({
     required this.child,
     required this.radius,
     required this.onTap,
     required this.selected,
+    required this.accentColor,
   });
 
   static const LinearGradient _selectedGradient = LinearGradient(
@@ -854,13 +920,13 @@ class _InkGlass extends StatelessWidget {
         gradient: selected ? _selectedGradient : _normalGradient,
         border: Border.all(
           color: selected
-              ? const Color(0xFF1B4F9C).withOpacity(0.28)
+              ? accentColor.withOpacity(.30)
               : Colors.white.withOpacity(0.10),
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1B4F9C).withOpacity(selected ? 0.12 : 0.06),
-            blurRadius: selected ? 16 : 10,
+            color: accentColor.withOpacity(selected ? 0.14 : 0.05),
+            blurRadius: selected ? 18 : 10,
             offset: const Offset(0, 7),
           ),
           BoxShadow(

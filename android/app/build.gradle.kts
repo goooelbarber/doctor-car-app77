@@ -12,7 +12,7 @@ if (localPropertiesFile.exists()) {
     localPropertiesFile.inputStream().use { localProperties.load(it) }
 }
 
-val mapsApiKey = localProperties.getProperty("MAPS_API_KEY", "")
+val mapsApiKey = localProperties.getProperty("MAPS_API_KEY") ?: ""
 
 android {
     namespace = "com.example.doctor_car_app"
@@ -34,8 +34,6 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-
-        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     buildTypes {
@@ -48,3 +46,5 @@ android {
 flutter {
     source = "../.."
 }
+
+android.defaultConfig.manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey

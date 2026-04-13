@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../core/theme/app_theme.dart';
-import 'home_screen.dart';
 
 class ReviewScreen extends StatefulWidget {
   final String orderId;
@@ -34,7 +33,6 @@ class _ReviewScreenState extends State<ReviewScreen>
   Color get _surface3 => const Color(0xFF0D2140);
 
   Color get _primary => AppTheme.accent;
-  // ignore: unused_element
   Color get _primaryDark => AppTheme.accentDark;
   Color get _primarySoft => AppTheme.accentSoft;
   Color get _textMain => AppTheme.textLight;
@@ -181,32 +179,40 @@ class _ReviewScreenState extends State<ReviewScreen>
 
     _submittedOnce = true;
     HapticFeedback.mediumImpact();
-    setState(() => isSending = true);
 
-    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) {
+      setState(() => isSending = true);
+    }
 
-    if (!mounted) return;
-    setState(() => isSending = false);
+    try {
+      // TODO: Replace with your real API request
+      await Future.delayed(const Duration(seconds: 2));
 
-    _showSuccessSheet();
+      if (!mounted) return;
+
+      setState(() => isSending = false);
+      _showSuccessSheet();
+    } catch (e) {
+      _submittedOnce = false;
+
+      if (!mounted) return;
+
+      setState(() => isSending = false);
+      _snack("حدث خطأ أثناء إرسال التقييم");
+    }
   }
 
-  void _goHome() {
+  void _finishReviewFlow() {
     if (!mounted) return;
 
+    // 1) اقفل الـ bottom sheet
     Navigator.of(context).pop();
 
-    if (widget.useNamedHomeRoute) {
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        widget.homeRouteName,
-        (route) => false,
-      );
-    } else {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-        (route) => false,
-      );
-    }
+    // 2) ارجع من شاشة التقييم نفسها مع نتيجة نجاح
+    Future.microtask(() {
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    });
   }
 
   Widget _card({
@@ -386,8 +392,10 @@ class _ReviewScreenState extends State<ReviewScreen>
             children: [
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white),
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
+                ),
               ),
               Expanded(
                 child: Column(
@@ -1004,7 +1012,7 @@ class _ReviewScreenState extends State<ReviewScreen>
                   backgroundColor: _primarySoft,
                   child: Icon(
                     Icons.check_circle,
-                    color: _primary,
+                    color: _primaryDark,
                     size: 38,
                   ),
                 ),
@@ -1030,7 +1038,7 @@ class _ReviewScreenState extends State<ReviewScreen>
                   width: double.infinity,
                   height: 52,
                   child: InkWell(
-                    onTap: _goHome,
+                    onTap: _finishReviewFlow,
                     borderRadius: BorderRadius.circular(18),
                     child: Ink(
                       decoration: BoxDecoration(

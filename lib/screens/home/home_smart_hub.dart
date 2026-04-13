@@ -3,13 +3,16 @@ part of '../home_screen.dart';
 
 extension _HomeSmartHub on _HomeScreenState {
   // ===================== tiny helpers =====================
-  void _tap(VoidCallback fn) {
+  void _hubTap(VoidCallback fn) {
     HapticFeedback.selectionClick();
     fn();
   }
 
-  BoxShadow _hubShadow(
-      {double blur = 28, double dy = 16, double opacity = .12}) {
+  BoxShadow _hubShadow({
+    double blur = 28,
+    double dy = 16,
+    double opacity = .12,
+  }) {
     return BoxShadow(
       color: Colors.black.withOpacity(_isDarkMode ? (opacity * 1.15) : opacity),
       blurRadius: blur,
@@ -17,53 +20,52 @@ extension _HomeSmartHub on _HomeScreenState {
     );
   }
 
-  // ✅ NEW: تدرج الأخضر/الأبيض (لايت) + تينت أخضر في الدارك
-  LinearGradient get _brandWhiteGradient => LinearGradient(
+  Color get _hubBrand => const Color(0xFF5BB8F6);
+  Color get _hubBrand2 => const Color(0xFF2F67A1);
+  Color get _hubGold => const Color(0xFFFFC857);
+
+  LinearGradient get _hubPremiumGradient => LinearGradient(
         begin: Alignment.topRight,
         end: Alignment.bottomLeft,
         colors: _isDarkMode
-            ? [
-                const Color(0xff0B1220),
-                Color.lerp(const Color(0xff0B1220), brand, 0.16)!,
-                Color.lerp(const Color(0xff0B1220), brand2, 0.10)!,
+            ? const [
+                Color(0xFF0B1220),
+                Color(0xFF0F1D34),
+                Color(0xFF14345A),
               ]
-            : [
-                Color.lerp(brand, Colors.white, 0.35)!, // أخضر فاتح
-                const Color(0xffffffff), // أبيض
-                const Color(0xffF6FFF9), // أبيض بلمسة خضرا
+            : const [
+                Color(0xFFEAF6FF),
+                Color(0xFFFFFFFF),
+                Color(0xFFF3FAFF),
               ],
       );
 
-  // ✅ NEW: Glow أخضر بسيط احترافي
-  List<BoxShadow> get _brandGlow => [
+  List<BoxShadow> get _hubGlow => [
         BoxShadow(
-          color: brand.withOpacity(_isDarkMode ? .16 : .18),
+          color: _hubBrand.withOpacity(_isDarkMode ? .16 : .18),
           blurRadius: 28,
           offset: const Offset(0, 14),
         ),
       ];
 
   Widget _glowDot({double size = 8}) {
-    final Color g = (_HomeScreenState._gold ?? Colors.amber);
-
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: g.withOpacity(.95),
+        color: _hubGold.withOpacity(.95),
         boxShadow: [
           BoxShadow(
-            color: g.withOpacity(.45),
+            color: _hubGold.withOpacity(.45),
             blurRadius: 14,
             offset: const Offset(0, 6),
-          )
+          ),
         ],
       ),
     );
   }
 
-  // ✅ NEW: route helper (real OBD flow)
   void _goToObdScan() {
     Navigator.push(
       context,
@@ -76,14 +78,14 @@ extension _HomeSmartHub on _HomeScreenState {
     );
   }
 
-  // ===================== Smart Hub (PRO) =====================
+  // ===================== Smart Hub Bar =====================
   // ignore: unused_element
   Widget _smartHubBarPro() {
     return Semantics(
       button: true,
       label: _isArabic ? "فتح Smart Hub" : "Open Smart Hub",
       child: InkWell(
-        onTap: () => _tap(_openSmartHubSheet),
+        onTap: () => _hubTap(_openSmartHubSheet),
         borderRadius: BorderRadius.circular(24),
         child: Container(
           padding: const EdgeInsets.all(14),
@@ -91,10 +93,10 @@ extension _HomeSmartHub on _HomeScreenState {
             borderRadius: BorderRadius.circular(24),
             border: Border.all(color: stroke),
             boxShadow: [
-              ..._brandGlow,
-              _hubShadow(opacity: .09, blur: 22, dy: 12)
+              ..._hubGlow,
+              _hubShadow(opacity: .09, blur: 22, dy: 12),
             ],
-            gradient: _brandWhiteGradient,
+            gradient: _hubPremiumGradient,
           ),
           child: Row(
             children: [
@@ -106,26 +108,34 @@ extension _HomeSmartHub on _HomeScreenState {
                   gradient: LinearGradient(
                     begin: Alignment.topRight,
                     end: Alignment.bottomLeft,
-                    colors: [brand, brand2.withOpacity(.80)],
+                    colors: [_hubBrand, _hubBrand2.withOpacity(.85)],
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: brand.withOpacity(.20),
+                      color: _hubBrand.withOpacity(.20),
                       blurRadius: 18,
                       offset: const Offset(0, 10),
                     ),
                   ],
                 ),
-                child: const Icon(Icons.auto_awesome_rounded,
-                    color: Colors.white, size: 24),
+                child: const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: _isArabic
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 6,
                       children: [
                         Text(
                           "Smart Hub",
@@ -135,11 +145,8 @@ extension _HomeSmartHub on _HomeScreenState {
                             color: textMain,
                           ),
                         ),
-                        const SizedBox(width: 8),
                         _hubBadgePro("PRO"),
-                        const SizedBox(width: 8),
                         _glowDot(size: 6.5),
-                        const SizedBox(width: 6),
                         Text(
                           _isArabic ? "جديد" : "New",
                           style: GoogleFonts.cairo(
@@ -150,13 +157,14 @@ extension _HomeSmartHub on _HomeScreenState {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 4),
                     Text(
                       _isArabic
                           ? "تشخيص ذكي + فحص OBD بضغطة"
                           : "AI diagnosis + OBD scan in one tap",
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                      textAlign: _isArabic ? TextAlign.right : TextAlign.left,
                       style: GoogleFonts.cairo(
                         fontSize: 12.2,
                         fontWeight: FontWeight.w700,
@@ -170,18 +178,22 @@ extension _HomeSmartHub on _HomeScreenState {
                         scrollDirection: Axis.horizontal,
                         physics: const BouncingScrollPhysics(),
                         children: [
-                          _chip(icon: Icons.auto_awesome, text: "AI"),
+                          _hubChip(icon: Icons.auto_awesome, text: "AI"),
                           const SizedBox(width: 8),
-                          _chip(
-                              icon: Icons.qr_code_scanner_rounded, text: "OBD"),
+                          _hubChip(
+                            icon: Icons.qr_code_scanner_rounded,
+                            text: "OBD",
+                          ),
                           const SizedBox(width: 8),
-                          _chip(
-                              icon: Icons.speed_rounded,
-                              text: _isArabic ? "سريع" : "Fast"),
+                          _hubChip(
+                            icon: Icons.speed_rounded,
+                            text: _isArabic ? "سريع" : "Fast",
+                          ),
                           const SizedBox(width: 8),
-                          _chip(
-                              icon: Icons.verified_rounded,
-                              text: _isArabic ? "موثوق" : "Trusted"),
+                          _hubChip(
+                            icon: Icons.verified_rounded,
+                            text: _isArabic ? "موثوق" : "Trusted",
+                          ),
                         ],
                       ),
                     ),
@@ -203,20 +215,20 @@ extension _HomeSmartHub on _HomeScreenState {
     );
   }
 
-  Widget _chip({required IconData icon, required String text}) {
+  Widget _hubChip({required IconData icon, required String text}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
         color: _isDarkMode
             ? Colors.white.withOpacity(.06)
-            : brand.withOpacity(.08),
+            : _hubBrand.withOpacity(.08),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: stroke),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: brand.withOpacity(.95)),
+          Icon(icon, size: 16, color: _hubBrand.withOpacity(.95)),
           const SizedBox(width: 6),
           Text(
             text,
@@ -232,27 +244,25 @@ extension _HomeSmartHub on _HomeScreenState {
   }
 
   Widget _hubBadgePro(String text) {
-    final Color g = (_HomeScreenState._gold ?? Colors.amber);
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: g.withOpacity(_isDarkMode ? .18 : .16),
+        color: _hubGold.withOpacity(_isDarkMode ? .18 : .16),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: g.withOpacity(.30)),
+        border: Border.all(color: _hubGold.withOpacity(.30)),
       ),
       child: Text(
         text,
         style: GoogleFonts.cairo(
           fontSize: 11.5,
           fontWeight: FontWeight.w900,
-          color: _isDarkMode ? Colors.white : const Color(0xff7A5400),
+          color: _isDarkMode ? Colors.white : const Color(0xFF7A5400),
         ),
       ),
     );
   }
 
-  // ===================== Smart Hub Sheet (PRO) =====================
+  // ===================== Smart Hub Sheet =====================
   void _openSmartHubSheet() {
     showModalBottomSheet(
       context: context,
@@ -265,69 +275,82 @@ extension _HomeSmartHub on _HomeScreenState {
           child: Container(
             color: surface,
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 56,
-                    height: 6,
-                    margin: const EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      color: _isDarkMode
-                          ? Colors.white.withOpacity(.18)
-                          : Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(6),
+            child: SafeArea(
+              top: false,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 6,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: _isDarkMode
+                            ? Colors.white.withOpacity(.18)
+                            : Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                     ),
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: brand.withOpacity(_isDarkMode ? .18 : .10),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: brand.withOpacity(.18)),
+                    Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color:
+                                _hubBrand.withOpacity(_isDarkMode ? .18 : .10),
+                            borderRadius: BorderRadius.circular(16),
+                            border:
+                                Border.all(color: _hubBrand.withOpacity(.18)),
+                          ),
+                          child: Icon(
+                            Icons.auto_awesome_rounded,
+                            color: _hubBrand,
+                          ),
                         ),
-                        child: Icon(Icons.auto_awesome_rounded, color: brand),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _isArabic ? "Smart Hub" : "Smart Hub",
-                              style: GoogleFonts.cairo(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 16,
-                                color: textMain,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: _isArabic
+                                ? CrossAxisAlignment.end
+                                : CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Smart Hub",
+                                style: GoogleFonts.cairo(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 16,
+                                  color: textMain,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              _isArabic
-                                  ? "اختار تجربة التشخيص المناسبة"
-                                  : "Choose the best diagnosis experience",
-                              style: GoogleFonts.cairo(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 12.5,
-                                color: textSub,
+                              const SizedBox(height: 2),
+                              Text(
+                                _isArabic
+                                    ? "اختار تجربة التشخيص المناسبة"
+                                    : "Choose the best diagnosis experience",
+                                textAlign: _isArabic
+                                    ? TextAlign.right
+                                    : TextAlign.left,
+                                style: GoogleFonts.cairo(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12.5,
+                                  color: textSub,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      _hubBadgePro("PRO"),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  _smartToolsCard(),
-                  const SizedBox(height: 14),
-                  _scanRescueCard(),
-                  const SizedBox(height: 10),
-                ],
+                        _hubBadgePro("PRO"),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    _smartToolsCard(),
+                    const SizedBox(height: 14),
+                    _scanRescueCard(),
+                    const SizedBox(height: 10),
+                  ],
+                ),
               ),
             ),
           ),
@@ -336,7 +359,7 @@ extension _HomeSmartHub on _HomeScreenState {
     );
   }
 
-  // ===================== Smart Tools Card (PRO) =====================
+  // ===================== Smart Tools Card =====================
   Widget _smartToolsCard() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -347,7 +370,8 @@ extension _HomeSmartHub on _HomeScreenState {
         boxShadow: [_hubShadow(blur: 22, dy: 12, opacity: .08)],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+            _isArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Row(
             children: [
@@ -359,16 +383,24 @@ extension _HomeSmartHub on _HomeScreenState {
                   gradient: LinearGradient(
                     begin: Alignment.topRight,
                     end: Alignment.bottomLeft,
-                    colors: [brand.withOpacity(.95), brand2.withOpacity(.70)],
+                    colors: [
+                      _hubBrand.withOpacity(.95),
+                      _hubBrand2.withOpacity(.70)
+                    ],
                   ),
                 ),
-                child: const Icon(Icons.bolt_rounded,
-                    color: Colors.white, size: 22),
+                child: const Icon(
+                  Icons.bolt_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: _isArabic
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
                   children: [
                     Text(
                       _isArabic ? "أدوات ذكية" : "Smart Tools",
@@ -383,6 +415,7 @@ extension _HomeSmartHub on _HomeScreenState {
                       _isArabic
                           ? "تشخيص سريع بطرق مختلفة"
                           : "Quick diagnosis in multiple ways",
+                      textAlign: _isArabic ? TextAlign.right : TextAlign.left,
                       style: GoogleFonts.cairo(
                         fontWeight: FontWeight.w700,
                         fontSize: 12.5,
@@ -392,7 +425,7 @@ extension _HomeSmartHub on _HomeScreenState {
                   ],
                 ),
               ),
-              _pill(icon: Icons.auto_awesome, text: _isArabic ? "AI" : "AI"),
+              _hubPill(icon: Icons.auto_awesome, text: "AI"),
             ],
           ),
           const SizedBox(height: 14),
@@ -426,7 +459,7 @@ extension _HomeSmartHub on _HomeScreenState {
                   icon: Icons.photo_camera_rounded,
                   title: _isArabic ? "فحص بالصور" : "Photo Check",
                   subtitle: _isArabic ? "ارفع صورة" : "Upload a photo",
-                  onTap: _photoCheck, // ✅ REAL FLOW
+                  onTap: _photoCheck,
                 ),
               ),
               const SizedBox(width: 12),
@@ -453,15 +486,15 @@ extension _HomeSmartHub on _HomeScreenState {
     bool emphasize = false,
   }) {
     final bg = emphasize
-        ? brand.withOpacity(_isDarkMode ? .22 : .10)
+        ? _hubBrand.withOpacity(_isDarkMode ? .22 : .10)
         : (_isDarkMode
             ? Colors.white.withOpacity(.05)
-            : brand.withOpacity(.05));
+            : _hubBrand.withOpacity(.05));
 
-    final border = emphasize ? brand.withOpacity(.32) : stroke;
+    final border = emphasize ? _hubBrand.withOpacity(.32) : stroke;
 
     return InkWell(
-      onTap: () => _tap(onTap),
+      onTap: () => _hubTap(onTap),
       borderRadius: BorderRadius.circular(18),
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -471,7 +504,8 @@ extension _HomeSmartHub on _HomeScreenState {
           border: Border.all(color: border),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment:
+              _isArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -480,16 +514,16 @@ extension _HomeSmartHub on _HomeScreenState {
                   height: 40,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    color: brand.withOpacity(_isDarkMode ? .18 : .10),
-                    border: Border.all(color: brand.withOpacity(.18)),
+                    color: _hubBrand.withOpacity(_isDarkMode ? .18 : .10),
+                    border: Border.all(color: _hubBrand.withOpacity(.18)),
                   ),
-                  child: Icon(icon, color: brand, size: 20),
+                  child: Icon(icon, color: _hubBrand, size: 20),
                 ),
                 const Spacer(),
                 Icon(
                   _isArabic
-                      ? Icons.arrow_back_ios_new
-                      : Icons.arrow_forward_ios,
+                      ? Icons.arrow_back_ios_new_rounded
+                      : Icons.arrow_forward_ios_rounded,
                   size: 14,
                   color: textSub,
                 ),
@@ -500,6 +534,7 @@ extension _HomeSmartHub on _HomeScreenState {
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              textAlign: _isArabic ? TextAlign.right : TextAlign.left,
               style: GoogleFonts.cairo(
                 fontWeight: FontWeight.w900,
                 fontSize: 13.2,
@@ -511,6 +546,7 @@ extension _HomeSmartHub on _HomeScreenState {
               subtitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              textAlign: _isArabic ? TextAlign.right : TextAlign.left,
               style: GoogleFonts.cairo(
                 fontWeight: FontWeight.w700,
                 fontSize: 11.8,
@@ -523,7 +559,7 @@ extension _HomeSmartHub on _HomeScreenState {
     );
   }
 
-  // ===================== Scan & Rescue Card (PRO) =====================
+  // ===================== Scan & Rescue Card =====================
   Widget _scanRescueCard() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -534,7 +570,8 @@ extension _HomeSmartHub on _HomeScreenState {
         boxShadow: [_hubShadow(blur: 22, dy: 12, opacity: .08)],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+            _isArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Row(
             children: [
@@ -542,16 +579,18 @@ extension _HomeSmartHub on _HomeScreenState {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: brand.withOpacity(_isDarkMode ? .18 : .10),
+                  color: _hubBrand.withOpacity(_isDarkMode ? .18 : .10),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: brand.withOpacity(.18)),
+                  border: Border.all(color: _hubBrand.withOpacity(.18)),
                 ),
-                child: Icon(Icons.qr_code_scanner_rounded, color: brand),
+                child: Icon(Icons.qr_code_scanner_rounded, color: _hubBrand),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: _isArabic
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
                   children: [
                     Text(
                       "Scan & Rescue",
@@ -566,6 +605,7 @@ extension _HomeSmartHub on _HomeScreenState {
                       _isArabic
                           ? "فحص أعطال كامل بالـ OBD"
                           : "Full OBD diagnostics",
+                      textAlign: _isArabic ? TextAlign.right : TextAlign.left,
                       style: GoogleFonts.cairo(
                         fontWeight: FontWeight.w700,
                         fontSize: 12.5,
@@ -575,7 +615,7 @@ extension _HomeSmartHub on _HomeScreenState {
                   ],
                 ),
               ),
-              _pill(icon: Icons.bluetooth_rounded, text: "Bluetooth"),
+              _hubPill(icon: Icons.bluetooth_rounded, text: "Bluetooth"),
             ],
           ),
           const SizedBox(height: 14),
@@ -583,18 +623,30 @@ extension _HomeSmartHub on _HomeScreenState {
             spacing: 10,
             runSpacing: 10,
             children: [
-              _miniFeature(Icons.code_rounded,
-                  _isArabic ? "أكواد الأعطال (DTC)" : "DTC Codes"),
-              _miniFeature(Icons.translate_rounded,
-                  _isArabic ? "تفسير بالعربي" : "Explanation"),
-              _miniFeature(Icons.traffic_rounded,
-                  _isArabic ? "درجة الخطورة" : "Severity"),
-              _miniFeature(Icons.price_change_rounded,
-                  _isArabic ? "تقدير تكلفة" : "Cost Estimate"),
-              _miniFeature(Icons.handyman_rounded,
-                  _isArabic ? "ترشيح الفني" : "Right Technician"),
-              _miniFeature(Icons.assignment_rounded,
-                  _isArabic ? "تقرير جاهز" : "Shareable Report"),
+              _miniFeature(
+                Icons.code_rounded,
+                _isArabic ? "أكواد الأعطال (DTC)" : "DTC Codes",
+              ),
+              _miniFeature(
+                Icons.translate_rounded,
+                _isArabic ? "تفسير بالعربي" : "Explanation",
+              ),
+              _miniFeature(
+                Icons.traffic_rounded,
+                _isArabic ? "درجة الخطورة" : "Severity",
+              ),
+              _miniFeature(
+                Icons.price_change_rounded,
+                _isArabic ? "تقدير تكلفة" : "Cost Estimate",
+              ),
+              _miniFeature(
+                Icons.handyman_rounded,
+                _isArabic ? "ترشيح الفني" : "Right Technician",
+              ),
+              _miniFeature(
+                Icons.assignment_rounded,
+                _isArabic ? "تقرير جاهز" : "Shareable Report",
+              ),
             ],
           ),
           const SizedBox(height: 14),
@@ -605,9 +657,10 @@ extension _HomeSmartHub on _HomeScreenState {
                   onPressed: _openScanRescueSheet,
                   style: ElevatedButton.styleFrom(
                     elevation: 0,
-                    backgroundColor: brand,
+                    backgroundColor: _hubBrand,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     minimumSize: const Size(double.infinity, 48),
                   ),
                   icon:
@@ -615,7 +668,9 @@ extension _HomeSmartHub on _HomeScreenState {
                   label: Text(
                     _isArabic ? "ابدأ الفحص" : "Start Scan",
                     style: GoogleFonts.cairo(
-                        fontWeight: FontWeight.w900, color: Colors.white),
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -623,13 +678,19 @@ extension _HomeSmartHub on _HomeScreenState {
               OutlinedButton(
                 onPressed: _showObdHowItWorks,
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: brand.withOpacity(.35), width: 1.4),
+                  side: BorderSide(
+                    color: _hubBrand.withOpacity(.35),
+                    width: 1.4,
+                  ),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   minimumSize: const Size(52, 48),
                 ),
-                child: Icon(Icons.info_outline_rounded,
-                    color: brand.withOpacity(.95)),
+                child: Icon(
+                  Icons.info_outline_rounded,
+                  color: _hubBrand.withOpacity(.95),
+                ),
               ),
             ],
           ),
@@ -639,18 +700,18 @@ extension _HomeSmartHub on _HomeScreenState {
   }
 
   // ===================== UI atoms =====================
-  Widget _pill({required IconData icon, required String text}) {
+  Widget _hubPill({required IconData icon, required String text}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: brand.withOpacity(_isDarkMode ? .18 : .08),
+        color: _hubBrand.withOpacity(_isDarkMode ? .18 : .08),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: brand.withOpacity(.18)),
+        border: Border.all(color: _hubBrand.withOpacity(.18)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: brand),
+          Icon(icon, size: 16, color: _hubBrand),
           const SizedBox(width: 6),
           Text(
             text,
@@ -671,14 +732,14 @@ extension _HomeSmartHub on _HomeScreenState {
       decoration: BoxDecoration(
         color: _isDarkMode
             ? Colors.white.withOpacity(.04)
-            : brand.withOpacity(.05),
+            : _hubBrand.withOpacity(.05),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: stroke),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: brand.withOpacity(.95)),
+          Icon(icon, size: 16, color: _hubBrand.withOpacity(.95)),
           const SizedBox(width: 6),
           Text(
             text,
@@ -693,7 +754,7 @@ extension _HomeSmartHub on _HomeScreenState {
     );
   }
 
-  // ===================== Scan & Rescue Sheet (PRO) =====================
+  // ===================== Scan & Rescue Sheet =====================
   void _openScanRescueSheet() {
     showModalBottomSheet(
       context: context,
@@ -706,140 +767,173 @@ extension _HomeSmartHub on _HomeScreenState {
           child: Container(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
             color: surface,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 60,
-                    height: 6,
-                    margin: const EdgeInsets.only(bottom: 14),
-                    decoration: BoxDecoration(
-                      color: _isDarkMode
-                          ? Colors.white.withOpacity(.18)
-                          : Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
-                ),
-                Row(
+            child: SafeArea(
+              top: false,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: _isArabic
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: brand.withOpacity(_isDarkMode ? .18 : .10),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: brand.withOpacity(.18)),
-                      ),
-                      child: Icon(Icons.qr_code_scanner_rounded,
-                          color: brand, size: 24),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Scan & Rescue",
-                            style: GoogleFonts.cairo(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 16,
-                              color: textMain,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _isArabic
-                                ? "فحص أعطال كامل عبر OBD بلوتوث"
-                                : "Full scan via Bluetooth OBD",
-                            style: GoogleFonts.cairo(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12.5,
-                              color: textSub,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    _pill(icon: Icons.bluetooth_rounded, text: "OBD"),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                _sheetBullet(
-                    icon: Icons.check_circle_rounded,
-                    color: Colors.green,
-                    text: _isArabic
-                        ? "أكواد الأعطال (DTC)"
-                        : "DTC Trouble codes"),
-                _sheetBullet(
-                    icon: Icons.translate_rounded,
-                    color: brand,
-                    text: _isArabic
-                        ? "تفسير بالعربي بشكل بسيط"
-                        : "Simple explanation"),
-                _sheetBullet(
-                    icon: Icons.traffic_rounded,
-                    color: Colors.orange,
-                    text: _isArabic
-                        ? "درجة الخطورة (تكمّل ولا توقف)"
-                        : "Severity (drive or stop)"),
-                _sheetBullet(
-                    icon: Icons.payments_rounded,
-                    color: Colors.amber,
-                    text: _isArabic
-                        ? "سعر تقديري للإصلاح"
-                        : "Estimated repair cost"),
-                _sheetBullet(
-                    icon: Icons.engineering_rounded,
-                    color: Colors.purple,
-                    text:
-                        _isArabic ? "ترشيح الفني المناسب" : "Recommended tech"),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _goToObdScan();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          backgroundColor: brand,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
-                          minimumSize: const Size(double.infinity, 52),
-                        ),
-                        icon: const Icon(Icons.play_arrow_rounded,
-                            color: Colors.white),
-                        label: Text(
-                          _isArabic ? "ابدأ الفحص" : "Start scan",
-                          style: GoogleFonts.cairo(
-                              fontWeight: FontWeight.w900, color: Colors.white),
+                    Center(
+                      child: Container(
+                        width: 60,
+                        height: 6,
+                        margin: const EdgeInsets.only(bottom: 14),
+                        decoration: BoxDecoration(
+                          color: _isDarkMode
+                              ? Colors.white.withOpacity(.18)
+                              : Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(6),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _showObdHowItWorks();
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                            color: brand.withOpacity(.35), width: 1.4),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
-                        minimumSize: const Size(56, 52),
-                      ),
-                      child: Icon(Icons.info_outline_rounded,
-                          color: brand.withOpacity(.95)),
+                    Row(
+                      children: [
+                        Container(
+                          width: 46,
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color:
+                                _hubBrand.withOpacity(_isDarkMode ? .18 : .10),
+                            borderRadius: BorderRadius.circular(16),
+                            border:
+                                Border.all(color: _hubBrand.withOpacity(.18)),
+                          ),
+                          child: Icon(
+                            Icons.qr_code_scanner_rounded,
+                            color: _hubBrand,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: _isArabic
+                                ? CrossAxisAlignment.end
+                                : CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Scan & Rescue",
+                                style: GoogleFonts.cairo(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 16,
+                                  color: textMain,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                _isArabic
+                                    ? "فحص أعطال كامل عبر OBD بلوتوث"
+                                    : "Full scan via Bluetooth OBD",
+                                textAlign: _isArabic
+                                    ? TextAlign.right
+                                    : TextAlign.left,
+                                style: GoogleFonts.cairo(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12.5,
+                                  color: textSub,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _hubPill(icon: Icons.bluetooth_rounded, text: "OBD"),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    _sheetBullet(
+                      icon: Icons.check_circle_rounded,
+                      color: Colors.green,
+                      text: _isArabic
+                          ? "أكواد الأعطال (DTC)"
+                          : "DTC Trouble codes",
+                    ),
+                    _sheetBullet(
+                      icon: Icons.translate_rounded,
+                      color: _hubBrand,
+                      text: _isArabic
+                          ? "تفسير بالعربي بشكل بسيط"
+                          : "Simple explanation",
+                    ),
+                    _sheetBullet(
+                      icon: Icons.traffic_rounded,
+                      color: Colors.orange,
+                      text: _isArabic
+                          ? "درجة الخطورة (تكمّل ولا توقف)"
+                          : "Severity (drive or stop)",
+                    ),
+                    _sheetBullet(
+                      icon: Icons.payments_rounded,
+                      color: Colors.amber,
+                      text: _isArabic
+                          ? "سعر تقديري للإصلاح"
+                          : "Estimated repair cost",
+                    ),
+                    _sheetBullet(
+                      icon: Icons.engineering_rounded,
+                      color: Colors.purple,
+                      text: _isArabic
+                          ? "ترشيح الفني المناسب"
+                          : "Recommended tech",
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _goToObdScan();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              backgroundColor: _hubBrand,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              minimumSize: const Size(double.infinity, 52),
+                            ),
+                            icon: const Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.white,
+                            ),
+                            label: Text(
+                              _isArabic ? "ابدأ الفحص" : "Start scan",
+                              style: GoogleFonts.cairo(
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        OutlinedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _showObdHowItWorks();
+                          },
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(
+                              color: _hubBrand.withOpacity(.35),
+                              width: 1.4,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            minimumSize: const Size(56, 52),
+                          ),
+                          child: Icon(
+                            Icons.info_outline_rounded,
+                            color: _hubBrand.withOpacity(.95),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         );
@@ -847,8 +941,11 @@ extension _HomeSmartHub on _HomeScreenState {
     );
   }
 
-  Widget _sheetBullet(
-      {required IconData icon, required Color color, required String text}) {
+  Widget _sheetBullet({
+    required IconData icon,
+    required Color color,
+    required String text,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -892,72 +989,86 @@ extension _HomeSmartHub on _HomeScreenState {
           child: Container(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
             color: surface,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 60,
-                    height: 6,
-                    margin: const EdgeInsets.only(bottom: 14),
-                    decoration: BoxDecoration(
-                      color: _isDarkMode
-                          ? Colors.white.withOpacity(.18)
-                          : Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(6),
+            child: SafeArea(
+              top: false,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: _isArabic
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 60,
+                        height: 6,
+                        margin: const EdgeInsets.only(bottom: 14),
+                        decoration: BoxDecoration(
+                          color: _isDarkMode
+                              ? Colors.white.withOpacity(.18)
+                              : Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                Text(
-                  _isArabic ? "إزاي تشتغل الميزة؟" : "How does it work?",
-                  style: GoogleFonts.cairo(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                    color: textMain,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                _howStep(
-                    n: "1",
-                    text: _isArabic
-                        ? "اشتري قطعة OBD (الأفضل BLE زي Vgate vLinker MC+ أو OBDLink MX+)."
-                        : "Buy an OBD adapter (prefer BLE like vLinker MC+ or OBDLink MX+)."),
-                _howStep(
-                    n: "2",
-                    text: _isArabic
-                        ? "ركّبها في منفذ OBD (غالباً تحت الدركسيون)."
-                        : "Plug it into the OBD port (often under steering wheel)."),
-                _howStep(
-                    n: "3",
-                    text: _isArabic
-                        ? "افتح Doctor Car واضغط ابدأ الفحص."
-                        : "Open Doctor Car and tap Start scan."),
-                _howStep(
-                    n: "4",
-                    text: _isArabic
-                        ? "هتاخد تقرير: أكواد + تفسير + خطورة + اقتراحات."
-                        : "Get a report: codes, explanation, severity, suggestions."),
-                const SizedBox(height: 14),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: brand,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
-                      minimumSize: const Size(double.infinity, 52),
-                    ),
-                    child: Text(
-                      _isArabic ? "تمام" : "Got it",
+                    Text(
+                      _isArabic ? "إزاي تشتغل الميزة؟" : "How does it work?",
                       style: GoogleFonts.cairo(
-                          fontWeight: FontWeight.w900, color: Colors.white),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                        color: textMain,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 10),
+                    _howStep(
+                      n: "1",
+                      text: _isArabic
+                          ? "اشتري قطعة OBD بلوتوث مناسبة."
+                          : "Buy a compatible Bluetooth OBD adapter.",
+                    ),
+                    _howStep(
+                      n: "2",
+                      text: _isArabic
+                          ? "ركّبها في منفذ OBD أسفل الطبلون."
+                          : "Plug it into the OBD port under the dashboard.",
+                    ),
+                    _howStep(
+                      n: "3",
+                      text: _isArabic
+                          ? "افتح Doctor Car واضغط ابدأ الفحص."
+                          : "Open Doctor Car and tap Start scan.",
+                    ),
+                    _howStep(
+                      n: "4",
+                      text: _isArabic
+                          ? "هيطلعلك تقرير كامل بالكود والتفسير والخطورة."
+                          : "You will get a report with code, explanation, and severity.",
+                    ),
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          backgroundColor: _hubBrand,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          minimumSize: const Size(double.infinity, 52),
+                        ),
+                        child: Text(
+                          _isArabic ? "تمام" : "Got it",
+                          style: GoogleFonts.cairo(
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         );
@@ -982,15 +1093,17 @@ extension _HomeSmartHub on _HomeScreenState {
             width: 30,
             height: 30,
             decoration: BoxDecoration(
-              color: brand.withOpacity(.12),
+              color: _hubBrand.withOpacity(.12),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: brand.withOpacity(.18)),
+              border: Border.all(color: _hubBrand.withOpacity(.18)),
             ),
             child: Center(
               child: Text(
                 n,
                 style: GoogleFonts.cairo(
-                    fontWeight: FontWeight.w900, color: textMain),
+                  fontWeight: FontWeight.w900,
+                  color: textMain,
+                ),
               ),
             ),
           ),
@@ -1011,6 +1124,46 @@ extension _HomeSmartHub on _HomeScreenState {
     );
   }
 
+  Widget _pill({
+    required IconData icon,
+    required String text,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        gradient: LinearGradient(
+          colors: [
+            brand.withOpacity(.9),
+            brand.withOpacity(.6),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: brand.withOpacity(.35),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.white),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: GoogleFonts.cairo(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ===================== Actions =====================
   void _quickCheck() => _openSmartSheet(
         _isArabic ? "فحص سريع" : "Quick Check",
@@ -1019,9 +1172,7 @@ extension _HomeSmartHub on _HomeScreenState {
             : "Quick diagnosis (will connect to API soon).",
       );
 
-  // ✅✅ PHOTO CHECK (IMPROVED UI + REAL AI CALL)
   void _photoCheck() {
-    // اقفل SmartHub sheet الأول
     Navigator.pop(context);
 
     showModalBottomSheet(
@@ -1065,8 +1216,11 @@ extension _HomeSmartHub on _HomeScreenState {
                       color: brand.withOpacity(_isDarkMode ? .18 : .10),
                       border: Border.all(color: brand.withOpacity(.22)),
                     ),
-                    child: Icon(Icons.photo_camera_rounded,
-                        color: brand, size: 22),
+                    child: Icon(
+                      Icons.photo_camera_rounded,
+                      color: brand,
+                      size: 22,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -1084,8 +1238,8 @@ extension _HomeSmartHub on _HomeScreenState {
                         const SizedBox(height: 2),
                         Text(
                           _isArabic
-                              ? "اختار صورة لتشخيص المشكلة (تقريبًا)"
-                              : "Pick a photo to diagnose (approx.)",
+                              ? "اختار صورة لتشخيص المشكلة بشكل تقريبي"
+                              : "Pick a photo to diagnose the issue",
                           style: GoogleFonts.cairo(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w700,
@@ -1136,7 +1290,8 @@ extension _HomeSmartHub on _HomeScreenState {
                     elevation: 0,
                     backgroundColor: brand,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18)),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
                     minimumSize: const Size(double.infinity, 56),
                   ),
                   child: Text(
@@ -1192,20 +1347,8 @@ extension _HomeSmartHub on _HomeScreenState {
     );
   }
 
-  // ✅ 1) pick image 2) show preview 3) call AI (server) 4) show result
   Future<void> _pickImageAndAnalyze(ImageSource source) async {
-    final picker = ImagePicker();
-    final XFile? file = await picker.pickImage(
-      source: source,
-      imageQuality: 85,
-      maxWidth: 1800,
-    );
-
-    if (file == null || !mounted) return;
-
-    // (اختياري) افتح Preview الأول
-    // ignore: unused_element
-    Future<void> _pickImage(ImageSource source) async {
+    try {
       final picker = ImagePicker();
       final XFile? file = await picker.pickImage(
         source: source,
@@ -1213,54 +1356,57 @@ extension _HomeSmartHub on _HomeScreenState {
         maxWidth: 1800,
       );
 
-      if (file == null) return;
-      if (!mounted) return;
+      if (file == null || !mounted) return;
 
-      if (kIsWeb) {
-        final bytes = await file.readAsBytes();
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => PhotoPreviewScreen.web(
-              bytes: bytes,
-              fileName: file.name,
-              prompt: "شخّص المشكلة من الصورة دي",
-            ),
-          ),
-        );
+      _showLoading();
+
+      Map<String, dynamic> result;
+
+      if (_aiPhotoDiagnoseUrl.contains("YOUR_DOMAIN.com")) {
+        result = {
+          "title": _isArabic ? "نتيجة مبدئية" : "Preliminary result",
+          "severity": "medium",
+          "advice": _isArabic
+              ? "تم اختيار الصورة بنجاح. اربط رابط خدمة التحليل الحقيقية لإظهار التشخيص الذكي الكامل."
+              : "Image selected successfully. Connect your real AI endpoint to get a full diagnosis.",
+          "possible_causes": _isArabic
+              ? [
+                  "الرابط الخاص بخدمة التحليل ما زال تجريبي",
+                  "الصورة جاهزة للإرسال",
+                ]
+              : [
+                  "AI endpoint is still a placeholder",
+                  "Image is ready for analysis",
+                ],
+          "next_steps": _isArabic
+              ? [
+                  "استبدل رابط السيرفر بالرابط الحقيقي",
+                  "أعد المحاولة بعد ربط الـ API",
+                ]
+              : [
+                  "Replace the server URL with the real endpoint",
+                  "Retry after connecting the API",
+                ],
+        };
       } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => PhotoPreviewScreen.mobile(
-              file: file,
-              prompt: "شخّص المشكلة من الصورة دي",
+        result = await _diagnosePhotoByServer(file);
+      }
+
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
+      _showAiResultSheet(result);
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).maybePop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _isArabic ? "حصل خطأ في التحليل: $e" : "AI failed: $e",
+              style: GoogleFonts.cairo(fontWeight: FontWeight.w800),
             ),
           ),
         );
       }
-    }
-
-    // اعمل Loading
-    if (!mounted) return;
-    _showLoading();
-
-    try {
-      final result = await _diagnosePhotoByServer(File(file.path));
-      if (!mounted) return;
-      Navigator.pop(context); // close loading
-      _showAiResultSheet(result);
-    } catch (e) {
-      if (!mounted) return;
-      Navigator.pop(context); // close loading
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            _isArabic ? "حصل خطأ في التحليل: $e" : "AI failed: $e",
-            style: GoogleFonts.cairo(fontWeight: FontWeight.w800),
-          ),
-        ),
-      );
     }
   }
 
@@ -1268,17 +1414,52 @@ extension _HomeSmartHub on _HomeScreenState {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
+      builder: (_) => Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          decoration: BoxDecoration(
+            color: surface,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: stroke),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(.18),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.4,
+                  color: brand,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                _isArabic ? "جاري التحليل..." : "Analyzing...",
+                style: GoogleFonts.cairo(
+                  fontWeight: FontWeight.w900,
+                  color: textMain,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
   // ===================== REAL AI (SERVER) =====================
-  // ✅ هنا بتحط لينك السيرفر بتاعك اللي بيكلم OpenAI Vision
-  // مثال: https://yourdomain.com/api/diagnose/photo
   static const String _aiPhotoDiagnoseUrl =
       "https://YOUR_DOMAIN.com/api/diagnose/photo";
 
-  Future<Map<String, dynamic>> _diagnosePhotoByServer(File image) async {
+  Future<Map<String, dynamic>> _diagnosePhotoByServer(XFile image) async {
     final dioClient = Dio(
       BaseOptions(
         connectTimeout: const Duration(seconds: 30),
@@ -1286,10 +1467,26 @@ extension _HomeSmartHub on _HomeScreenState {
       ),
     );
 
-    final form = FormData.fromMap({
-      "image": await MultipartFile.fromFile(image.path, filename: "photo.jpg"),
-      "lang": _isArabic ? "ar" : "en",
-    });
+    FormData form;
+
+    if (kIsWeb) {
+      final bytes = await image.readAsBytes();
+      form = FormData.fromMap({
+        "image": MultipartFile.fromBytes(
+          bytes,
+          filename: image.name.isNotEmpty ? image.name : "photo.jpg",
+        ),
+        "lang": _isArabic ? "ar" : "en",
+      });
+    } else {
+      form = FormData.fromMap({
+        "image": await MultipartFile.fromFile(
+          image.path,
+          filename: image.name.isNotEmpty ? image.name : "photo.jpg",
+        ),
+        "lang": _isArabic ? "ar" : "en",
+      });
+    }
 
     final res = await dioClient.post(_aiPhotoDiagnoseUrl, data: form);
 
@@ -1322,11 +1519,15 @@ extension _HomeSmartHub on _HomeScreenState {
 
     List<String> causes = [];
     final pc = data["possible_causes"];
-    if (pc is List) causes = pc.map((e) => e.toString()).toList();
+    if (pc is List) {
+      causes = pc.map((e) => e.toString()).toList();
+    }
 
     List<String> steps = [];
     final ns = data["next_steps"];
-    if (ns is List) steps = ns.map((e) => e.toString()).toList();
+    if (ns is List) {
+      steps = ns.map((e) => e.toString()).toList();
+    }
 
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
@@ -1394,7 +1595,9 @@ extension _HomeSmartHub on _HomeScreenState {
                   Text(
                     _isArabic ? "أسباب محتملة" : "Possible causes",
                     style: GoogleFonts.cairo(
-                        fontWeight: FontWeight.w900, color: textMain),
+                      fontWeight: FontWeight.w900,
+                      color: textMain,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   ...causes.take(6).map((c) => _bullet(c)),
@@ -1404,7 +1607,9 @@ extension _HomeSmartHub on _HomeScreenState {
                   Text(
                     _isArabic ? "الخطوات القادمة" : "Next steps",
                     style: GoogleFonts.cairo(
-                        fontWeight: FontWeight.w900, color: textMain),
+                      fontWeight: FontWeight.w900,
+                      color: textMain,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   ...steps.take(6).map((s) => _bullet(s)),
@@ -1418,15 +1623,17 @@ extension _HomeSmartHub on _HomeScreenState {
                       elevation: 0,
                       backgroundColor: brand,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       minimumSize: const Size(double.infinity, 54),
                     ),
                     child: Text(
                       _isArabic ? "تمام" : "OK",
                       style: GoogleFonts.cairo(
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          fontSize: 16),
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ),
@@ -1440,14 +1647,17 @@ extension _HomeSmartHub on _HomeScreenState {
 
   Widget _severityPill(String severity) {
     Color c;
-    String t = severity;
-    if (severity.toLowerCase().contains("high")) {
+    String t;
+
+    final s = severity.toLowerCase();
+
+    if (s.contains("high")) {
       c = Colors.red;
       t = _isArabic ? "عالي" : "High";
-    } else if (severity.toLowerCase().contains("medium")) {
+    } else if (s.contains("medium")) {
       c = Colors.orange;
       t = _isArabic ? "متوسط" : "Medium";
-    } else if (severity.toLowerCase().contains("low")) {
+    } else if (s.contains("low")) {
       c = Colors.green;
       t = _isArabic ? "منخفض" : "Low";
     } else {
@@ -1483,7 +1693,10 @@ extension _HomeSmartHub on _HomeScreenState {
             width: 7,
             height: 7,
             margin: const EdgeInsets.only(top: 7),
-            decoration: BoxDecoration(color: brand, shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: brand,
+              shape: BoxShape.circle,
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -1515,7 +1728,6 @@ extension _HomeSmartHub on _HomeScreenState {
             : "We’ll estimate severity and advise (soon).",
       );
 
-  // ===================== universal smart sheet =====================
   void _openSmartSheet(String title, String body) {
     showModalBottomSheet(
       context: context,
@@ -1557,13 +1769,16 @@ extension _HomeSmartHub on _HomeScreenState {
                       backgroundColor: brand,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                       minimumSize: const Size(double.infinity, 52),
                     ),
                     child: Text(
                       _isArabic ? "تمام" : "OK",
                       style: GoogleFonts.cairo(
-                          fontWeight: FontWeight.w900, color: Colors.white),
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),

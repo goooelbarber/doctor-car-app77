@@ -29,7 +29,11 @@ class ApiConfig {
 
   static String get apiPrefix => (_getEnv("API_PREFIX") ?? "/api").trim();
 
+  // ignore: unused_element
   static String get _webFallbackBase => "http://localhost:5555";
+
+  // IP اللاب الحقيقي على الواي فاي حسب ipconfig
+  static String get _realDeviceFallbackBase => "http://192.168.1.20:5555";
 
   static bool _looksLocalhostHost(String host) {
     final h = host.toLowerCase().trim();
@@ -39,14 +43,14 @@ class ApiConfig {
   static String get _rawBase {
     return _getEnv("API_BASE_URL") ??
         _getEnv("BASE_URL") ??
-        "http://192.168.1.12:5555";
+        _realDeviceFallbackBase;
   }
 
   static Uri _parseBaseUri() {
     try {
       return Uri.parse(_rawBase);
     } catch (_) {
-      return Uri.parse(_webFallbackBase);
+      return Uri.parse(_realDeviceFallbackBase);
     }
   }
 
@@ -77,19 +81,19 @@ class ApiConfig {
         return finalUrl;
       }
 
-      if (_looksLocalhostHost(parsed.host)) {
-        final fixed = Uri(
-          scheme: parsed.scheme.isNotEmpty ? parsed.scheme : "http",
-          host: parsed.host,
-          port: parsed.hasPort ? parsed.port : 5555,
-        );
+      // لو env فيه localhost أو 127.0.0.1 أو 0.0.0.0 على موبايل حقيقي
+      // أو لو فيه IP الـ vEthernet القديم 172.21.128.1
+      // نحوله تلقائيًا لـ IP الواي فاي الصحيح
+      if (_looksLocalhostHost(parsed.host) || parsed.host == "172.21.128.1") {
+        final fixed = Uri.parse(_realDeviceFallbackBase);
         final finalUrl = _clean(fixed.toString());
 
         if (debugLogs) {
           debugPrint(
-            "⚠️ BASE_URL يبدو localhost/0.0.0.0/127.0.0.1 على موبايل حقيقي.\n"
-            "⚠️ عدّل BASE_URL أو API_BASE_URL إلى IP الكمبيوتر على نفس الواي فاي.\n"
-            "⚠️ current => $finalUrl",
+            "⚠️ BASE_URL غير مناسب للموبايل الحقيقي.\n"
+            "⚠️ تم التحويل تلقائيًا إلى IP الواي فاي الصحيح.\n"
+            "⚠️ current => ${_clean(parsed.toString())}\n"
+            "✅ using   => $finalUrl",
           );
         }
         return finalUrl;
@@ -109,8 +113,25 @@ class ApiConfig {
 
   static String get socketUrl {
     final socketOverride = _getEnv("SOCKET_URL");
+
     if (socketOverride != null) {
       final cleaned = _clean(socketOverride);
+
+      // لو SOCKET_URL متساب على IP غلط للموبايل الحقيقي
+      if (!kIsWeb &&
+          defaultTargetPlatform == TargetPlatform.android &&
+          (cleaned.contains("172.21.128.1") ||
+              cleaned.contains("localhost") ||
+              cleaned.contains("127.0.0.1") ||
+              cleaned.contains("0.0.0.0"))) {
+        final fixed = _realDeviceFallbackBase;
+        if (debugLogs) {
+          debugPrint(
+              "⚠️ socketUrl override غير مناسب، تم استبداله بـ => $fixed");
+        }
+        return fixed;
+      }
+
       if (debugLogs) debugPrint("🔌 socketUrl override => $cleaned");
       return cleaned;
     }
@@ -120,7 +141,7 @@ class ApiConfig {
     return url;
   }
 
-  static const Duration requestTimeout = Duration(seconds: 20);
+  static const Duration requestTimeout = Duration(seconds: 30);
 
   static Map<String, String> jsonHeaders({String? token}) => {
         "Content-Type": "application/json",

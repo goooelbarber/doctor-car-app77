@@ -1,9 +1,10 @@
 // ================================================================
 // FILE: lib/screens/account/account_settings_screen.dart
-// DOCTOR CAR - PREMIUM PRO VERSION
+// DOCTOR CAR - ULTRA PREMIUM DASHBOARD VERSION
 // ================================================================
 
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:doctor_car_app/core/theme/app_theme.dart';
 import 'package:doctor_car_app/pages/home/home_page.dart';
@@ -28,7 +29,8 @@ class AccountSettingsScreen extends StatefulWidget {
   State<AccountSettingsScreen> createState() => _AccountSettingsScreenState();
 }
 
-class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
+class _AccountSettingsScreenState extends State<AccountSettingsScreen>
+    with TickerProviderStateMixin {
   bool _notificationsEnabled = true;
   String _language = 'ar';
   String _userName = 'مستخدم التطبيق';
@@ -41,82 +43,100 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   static const String _kName = 'name';
   static const String _kProfilePath = 'profileImagePath';
 
+  late final AnimationController _bgController;
+  late final AnimationController _pulseController;
+
   bool get _isArabic => _language == 'ar';
-  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   Color get _primary => AppTheme.accent;
   Color get _primaryDark => AppTheme.accentDark;
   Color get _danger => AppTheme.danger;
 
-  Color get _bg => _isDark ? AppTheme.bgEnd : AppTheme.ink;
-  Color get _surface => _isDark ? const Color(0xFF10233E) : Colors.white;
-  Color get _surface2 =>
-      _isDark ? const Color(0xFF17345F) : const Color(0xFFF7FAFF);
-  Color get _textMain => _isDark ? AppTheme.textLight : const Color(0xFF10233E);
-  Color get _textSub => _isDark ? AppTheme.muted : const Color(0xFF62738E);
+  Color get _bg => const Color(0xFF050B14);
+  Color get _surface => const Color(0xFF0B1422);
+  Color get _surface2 => const Color(0xFF101B2A);
+  // ignore: unused_element
+  Color get _surface3 => const Color(0xFF17273B);
 
-  Color get _border =>
-      _isDark ? Colors.white.withOpacity(.09) : AppTheme.line.withOpacity(.12);
+  Color get _textMain => const Color(0xFFF7FAFF);
+  Color get _textSub => const Color(0xFFD4E3F7);
+  // ignore: unused_element
+  Color get _hint => const Color(0xFFA8BDD8);
+  Color get _border => Colors.white.withOpacity(.07);
 
-  LinearGradient get _pageGradient => _isDark
-      ? const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF081A36),
-            Color(0xFF122B50),
-            Color(0xFF040D1D),
-          ],
-        )
-      : LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.white,
-            Color(0xFFF4F7FC),
-            Color(0xFFEAF1FB),
-          ],
-        );
-
-  LinearGradient get _headerGradient => const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
+  LinearGradient get _pageGradient => const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
         colors: [
-          Color(0xFF1D4F99),
-          Color(0xFF163F7E),
-          Color(0xFF0E2D60),
+          Color(0xFF06101B),
+          Color(0xFF081321),
+          Color(0xFF040913),
         ],
       );
 
-  LinearGradient get _primaryGradient => AppTheme.ctaAquaGradient;
+  LinearGradient get _heroGradient => const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color(0xFF183A74),
+          Color(0xFF0E2A57),
+          Color(0xFF09172F),
+        ],
+      );
+
+  LinearGradient get _primaryGradient => const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color(0xFF7AB3FF),
+          Color(0xFF4A8FFF),
+          Color(0xFF2A65D9),
+        ],
+      );
 
   List<BoxShadow> get _cardShadow => [
         BoxShadow(
-          color: _isDark
-              ? Colors.black.withOpacity(.22)
-              : AppTheme.accent.withOpacity(.08),
-          blurRadius: 18,
-          offset: const Offset(0, 10),
+          color: Colors.black.withOpacity(.28),
+          blurRadius: 28,
+          offset: const Offset(0, 14),
         ),
       ];
 
   List<BoxShadow> get _strongGlow => [
         BoxShadow(
-          color: _primary.withOpacity(.18),
-          blurRadius: 24,
+          color: _primary.withOpacity(.14),
+          blurRadius: 30,
           offset: const Offset(0, 12),
         ),
         BoxShadow(
-          color: Colors.black.withOpacity(_isDark ? .18 : .04),
-          blurRadius: 18,
-          offset: const Offset(0, 8),
+          color: Colors.black.withOpacity(.24),
+          blurRadius: 26,
+          offset: const Offset(0, 14),
         ),
       ];
 
   @override
   void initState() {
     super.initState();
+
+    _bgController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 16),
+    )..repeat();
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat(reverse: true);
+
     _load();
+  }
+
+  @override
+  void dispose() {
+    _bgController.dispose();
+    _pulseController.dispose();
+    super.dispose();
   }
 
   void _tap(VoidCallback fn) {
@@ -129,14 +149,18 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: _isDark ? const Color(0xFF10233E) : AppTheme.panel,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        margin: const EdgeInsets.all(14),
+        backgroundColor: const Color(0xFF11243E),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
         content: Text(
           msg,
           textAlign: TextAlign.center,
           style: GoogleFonts.cairo(
             color: Colors.white,
             fontWeight: FontWeight.w800,
+            fontSize: 13,
           ),
         ),
       ),
@@ -148,6 +172,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     if (!mounted) return;
 
     final p = prefs.getString(_kProfilePath);
+
     setState(() {
       _notificationsEnabled = prefs.getBool(_kNoti) ?? true;
       _language = prefs.getString(_kLang) ?? 'ar';
@@ -156,7 +181,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
       if (p != null && p.isNotEmpty) {
         final f = File(p);
-        if (f.existsSync()) _profileImage = f;
+        if (f.existsSync()) {
+          _profileImage = f;
+        }
       }
     });
   }
@@ -175,9 +202,11 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     setState(() => _language = lang);
     await context.setLocale(Locale(lang));
     await _save();
-    _snack(lang == 'ar'
-        ? 'تم تغيير اللغة بنجاح ✅'
-        : 'Language changed successfully ✅');
+    _snack(
+      lang == 'ar'
+          ? 'تم تغيير اللغة بنجاح ✅'
+          : 'Language changed successfully ✅',
+    );
   }
 
   Future<void> _pickImage() async {
@@ -193,85 +222,11 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
       await _save();
       _snack(
-          _isArabic ? 'تم تحديث الصورة الشخصية ✅' : 'Profile image updated ✅');
+        _isArabic ? 'تم تحديث الصورة الشخصية ✅' : 'Profile image updated ✅',
+      );
     } catch (_) {
       _snack(_isArabic ? 'تعذر اختيار الصورة' : 'Could not pick image');
     }
-  }
-
-  Future<void> _editName() async {
-    final controller = TextEditingController(text: _userName);
-
-    await showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: _surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        title: Text(
-          _isArabic ? 'تعديل الاسم' : 'Edit name',
-          style: GoogleFonts.cairo(
-            color: _textMain,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        content: TextField(
-          controller: controller,
-          style: GoogleFonts.cairo(
-            color: _textMain,
-            fontWeight: FontWeight.w800,
-          ),
-          decoration: InputDecoration(
-            hintText: _isArabic ? 'اكتب اسمك' : 'Enter your name',
-            hintStyle: GoogleFonts.cairo(color: _textSub),
-            filled: true,
-            fillColor: _surface2,
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: _border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: _primary, width: 1.4),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              _isArabic ? 'إلغاء' : 'Cancel',
-              style: GoogleFonts.cairo(
-                color: _textSub,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              elevation: 0,
-              backgroundColor: _primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-            onPressed: () {
-              final value = controller.text.trim();
-              setState(() {
-                _userName = value.isEmpty ? _userName : value;
-              });
-              _save();
-              Navigator.pop(context);
-              _snack(_isArabic ? 'تم حفظ الاسم ✅' : 'Name saved ✅');
-            },
-            child: Text(
-              _isArabic ? 'حفظ' : 'Save',
-              style: GoogleFonts.cairo(fontWeight: FontWeight.w900),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _contact(String type) async {
@@ -308,17 +263,41 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
   String _completionText(double value) {
     final p = (value * 100).round();
-    if (p >= 90)
+
+    if (p >= 90) {
       return _isArabic ? 'الحساب مكتمل تقريبًا' : 'Profile almost complete';
-    if (p >= 70)
+    }
+    if (p >= 70) {
       return _isArabic ? 'الحساب في حالة ممتازة' : 'Profile looks great';
-    if (p >= 50)
+    }
+    if (p >= 50) {
       return _isArabic
           ? 'يمكن تحسين بعض البيانات'
           : 'Some details can be improved';
+    }
     return _isArabic
         ? 'استكمل بياناتك للحصول على أفضل تجربة'
         : 'Complete your profile for a better experience';
+  }
+
+  String _membershipLabel(double completion) {
+    final p = (completion * 100).round();
+    if (p >= 85) return _isArabic ? 'عضوية Elite' : 'Elite Member';
+    if (p >= 65) return _isArabic ? 'عضوية Plus' : 'Plus Member';
+    return _isArabic ? 'عضوية أساسية' : 'Basic Member';
+  }
+
+  String _greeting() {
+    final hour = DateTime.now().hour;
+    if (_isArabic) {
+      if (hour < 12) return 'صباح الخير';
+      if (hour < 18) return 'مساء الخير';
+      return 'مساء النور';
+    } else {
+      if (hour < 12) return 'Good morning';
+      if (hour < 18) return 'Good afternoon';
+      return 'Good evening';
+    }
   }
 
   @override
@@ -326,57 +305,124 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     final mq = MediaQuery.of(context);
     final scale = mq.textScaler.scale(1.0);
     final clamped = scale.clamp(1.0, 1.10);
-    final fixedMq = mq.copyWith(textScaler: TextScaler.linear(clamped));
+    final fixedMq = mq.copyWith(
+      textScaler: TextScaler.linear(clamped),
+    );
 
     return MediaQuery(
       data: fixedMq,
-      child: Scaffold(
-        backgroundColor: _bg,
-        body: Stack(
-          children: [
-            Container(decoration: BoxDecoration(gradient: _pageGradient)),
-            Positioned(
-              top: -50,
-              right: -40,
-              child: _bgOrb(170, _primary.withOpacity(.13)),
-            ),
-            Positioned(
-              top: 180,
-              left: -40,
-              child: _bgOrb(120, Colors.white.withOpacity(_isDark ? .05 : .25)),
-            ),
-            CustomScrollView(
-              slivers: [
-                _buildSliverAppBar(),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 26),
-                    child: Column(
-                      children: [
-                        _profileHeader(),
-                        const SizedBox(height: 16),
-                        _statsRow(),
-                        const SizedBox(height: 18),
-                        const AccountQuickActions(),
-                        const SizedBox(height: 22),
-                        _sectionTitle(_isArabic ? 'لوحة التحكم' : 'Dashboard'),
-                        const SizedBox(height: 12),
-                        _dashboard(),
-                        const SizedBox(height: 22),
-                        _sectionTitle(_isArabic ? 'الإعدادات' : 'Settings'),
-                        const SizedBox(height: 12),
-                        _settingsBlock(),
-                        const SizedBox(height: 22),
-                        _sectionTitle(_isArabic ? 'الدعم الفني' : 'Support'),
-                        const SizedBox(height: 12),
-                        _support(),
-                        const SizedBox(height: 26),
-                        _logout(),
-                      ],
-                    ),
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          systemNavigationBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+          systemNavigationBarIconBrightness: Brightness.light,
+        ),
+        child: Scaffold(
+          backgroundColor: _bg,
+          body: AnimatedBuilder(
+            animation: Listenable.merge([_bgController, _pulseController]),
+            builder: (context, _) {
+              return Stack(
+                children: [
+                  Container(decoration: BoxDecoration(gradient: _pageGradient)),
+                  _backgroundDecor(),
+                  CustomScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      _buildSliverAppBar(),
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 14, 16, 30),
+                          child: Column(
+                            children: [
+                              _premiumProfileHeader(),
+                              const SizedBox(height: 16),
+                              _quickInsightRow(),
+                              const SizedBox(height: 18),
+                              const AccountQuickActions(),
+                              const SizedBox(height: 22),
+                              _sectionTitle(
+                                _isArabic ? 'لوحة التحكم' : 'Dashboard',
+                              ),
+                              const SizedBox(height: 12),
+                              _dashboard(),
+                              const SizedBox(height: 22),
+                              _sectionTitle(
+                                _isArabic ? 'الإعدادات' : 'Settings',
+                              ),
+                              const SizedBox(height: 12),
+                              _settingsBlock(),
+                              const SizedBox(height: 22),
+                              _sectionTitle(
+                                _isArabic ? 'الدعم الفني' : 'Support',
+                              ),
+                              const SizedBox(height: 12),
+                              _support(),
+                              const SizedBox(height: 26),
+                              _logout(),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _backgroundDecor() {
+    final progress = _bgController.value;
+    final pulse = 1 + (_pulseController.value * 0.04);
+
+    return Stack(
+      children: [
+        Positioned(
+          top: -90,
+          right: -40,
+          child: Transform.scale(
+            scale: pulse,
+            child: _glowOrb(240, _primary.withOpacity(.09)),
+          ),
+        ),
+        Positioned(
+          top: 230,
+          left: -70,
+          child: _glowOrb(170, const Color(0xFF4F8FFF).withOpacity(.07)),
+        ),
+        Positioned(
+          bottom: -50,
+          right: -20,
+          child: _glowOrb(200, const Color(0xFF73A8FF).withOpacity(.05)),
+        ),
+        Positioned.fill(
+          child: CustomPaint(
+            painter: _AccountBackgroundPainter(progress: progress),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _glowOrb(double size, Color color) {
+    return IgnorePointer(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color,
+          boxShadow: [
+            BoxShadow(
+              color: color,
+              blurRadius: 90,
+              spreadRadius: 20,
             ),
           ],
         ),
@@ -388,13 +434,16 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     return SliverAppBar(
       pinned: true,
       elevation: 0,
-      expandedHeight: 120,
+      expandedHeight: 132,
       backgroundColor: Colors.transparent,
       foregroundColor: Colors.white,
       flexibleSpace: FlexibleSpaceBar(
         centerTitle: true,
-        titlePadding:
-            const EdgeInsetsDirectional.only(start: 16, end: 16, bottom: 16),
+        titlePadding: const EdgeInsetsDirectional.only(
+          start: 16,
+          end: 16,
+          bottom: 16,
+        ),
         title: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -403,7 +452,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               style: GoogleFonts.cairo(
                 color: Colors.white,
                 fontWeight: FontWeight.w900,
-                fontSize: 17,
+                fontSize: 17.5,
               ),
             ),
             Text(
@@ -411,47 +460,29 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   ? 'إدارة الحساب والإعدادات'
                   : 'Manage account and settings',
               style: GoogleFonts.cairo(
-                color: Colors.white.withOpacity(.80),
+                color: Colors.white.withOpacity(.82),
                 fontWeight: FontWeight.w700,
-                fontSize: 10.5,
+                fontSize: 10.6,
               ),
             ),
           ],
         ),
         background: Container(
-          decoration: BoxDecoration(gradient: _headerGradient),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [
-                  Colors.black.withOpacity(.12),
-                  Colors.transparent,
-                ],
+          decoration: BoxDecoration(gradient: _heroGradient),
+          child: Stack(
+            children: [
+              Positioned(
+                top: -20,
+                right: -10,
+                child: _glowOrb(120, Colors.white.withOpacity(.06)),
               ),
-            ),
+              Positioned(
+                bottom: -30,
+                left: -20,
+                child: _glowOrb(90, Colors.white.withOpacity(.04)),
+              ),
+            ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _bgOrb(double size, Color color) {
-    return IgnorePointer(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: color,
-          boxShadow: [
-            BoxShadow(
-              color: color,
-              blurRadius: 80,
-              spreadRadius: 18,
-            ),
-          ],
         ),
       ),
     );
@@ -465,7 +496,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           height: 24,
           decoration: BoxDecoration(
             gradient: _primaryGradient,
-            borderRadius: BorderRadius.circular(99),
+            borderRadius: BorderRadius.circular(999),
           ),
         ),
         const SizedBox(width: 10),
@@ -483,87 +514,279 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     );
   }
 
-  Widget _solidCard({
+  Widget _glassCard({
     required Widget child,
     EdgeInsets padding = const EdgeInsets.all(16),
-    BorderRadius borderRadius = const BorderRadius.all(Radius.circular(22)),
-    bool withGlow = false,
+    BorderRadius borderRadius = const BorderRadius.all(Radius.circular(30)),
+    bool glow = false,
   }) {
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: _surface,
-        borderRadius: borderRadius,
-        border: Border.all(color: _border),
-        boxShadow: withGlow ? _strongGlow : _cardShadow,
+    return ClipRRect(
+      borderRadius: borderRadius,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+        child: Container(
+          padding: padding,
+          decoration: BoxDecoration(
+            color: _surface.withOpacity(.94),
+            borderRadius: borderRadius,
+            border: Border.all(color: _border),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(.045),
+                Colors.white.withOpacity(.012),
+              ],
+            ),
+            boxShadow: glow ? _strongGlow : _cardShadow,
+          ),
+          child: child,
+        ),
       ),
-      child: child,
     );
   }
 
-  Widget _iconBadge(
-    IconData icon, {
-    double size = 56,
-    double iconSize = 24,
-    bool light = false,
+  _DashboardPalette _paletteByIndex(int index) {
+    const palettes = [
+      _DashboardPalette(
+        base: Color(0xFF4E8DFF),
+        strong: Color(0xFF2563EB),
+        soft: Color(0xFF93C5FD),
+        tagBg: Color(0x1F60A5FA),
+      ),
+      _DashboardPalette(
+        base: Color(0xFF00B8D9),
+        strong: Color(0xFF0284C7),
+        soft: Color(0xFF67E8F9),
+        tagBg: Color(0x1F06B6D4),
+      ),
+      _DashboardPalette(
+        base: Color(0xFF8B5CF6),
+        strong: Color(0xFF6D28D9),
+        soft: Color(0xFFC4B5FD),
+        tagBg: Color(0x1F8B5CF6),
+      ),
+      _DashboardPalette(
+        base: Color(0xFF10B981),
+        strong: Color(0xFF059669),
+        soft: Color(0xFF86EFAC),
+        tagBg: Color(0x1F10B981),
+      ),
+      _DashboardPalette(
+        base: Color(0xFFF59E0B),
+        strong: Color(0xFFD97706),
+        soft: Color(0xFFFCD34D),
+        tagBg: Color(0x1FF59E0B),
+      ),
+      _DashboardPalette(
+        base: Color(0xFFEF5DA8),
+        strong: Color(0xFFDB2777),
+        soft: Color(0xFFF9A8D4),
+        tagBg: Color(0x1FEF5DA8),
+      ),
+    ];
+
+    return palettes[index % palettes.length];
+  }
+
+  Widget _premiumIconShell({
+    required IconData icon,
+    required _DashboardPalette palette,
+    double size = 58,
+    double iconSize = 22,
+    String? imagePath,
+    bool compact = false,
   }) {
+    final radius = compact ? 16.0 : 18.0;
+
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        gradient: light
-            ? LinearGradient(
-                colors: [
-                  Colors.white.withOpacity(.22),
-                  Colors.white.withOpacity(.14),
-                ],
-              )
-            : _primaryGradient,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color:
-              light ? Colors.white.withOpacity(.18) : _primary.withOpacity(.18),
-        ),
+        borderRadius: BorderRadius.circular(radius + 4),
         boxShadow: [
           BoxShadow(
-            color: (light ? Colors.white : _primary).withOpacity(.18),
+            color: palette.base.withOpacity(.28),
+            blurRadius: 24,
+            spreadRadius: 1,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(.18),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Icon(
-        icon,
-        color: Colors.white,
-        size: iconSize,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(radius + 4),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    palette.soft.withOpacity(.32),
+                    palette.base.withOpacity(.22),
+                    palette.strong.withOpacity(.18),
+                  ],
+                ),
+                border: Border.all(
+                  color: Colors.white.withOpacity(.08),
+                ),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: Padding(
+              padding: const EdgeInsets.all(3),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(radius),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color.alphaBlend(
+                        Colors.white.withOpacity(.24),
+                        palette.base,
+                      ),
+                      palette.base,
+                      palette.strong,
+                    ],
+                  ),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(.20),
+                    width: 1,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (imagePath != null)
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(radius),
+                child: Opacity(
+                  opacity: 0.10,
+                  child: Image.asset(
+                    imagePath,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const SizedBox(),
+                  ),
+                ),
+              ),
+            ),
+          Positioned(
+            top: 7,
+            left: 8,
+            right: 8,
+            child: Container(
+              height: 7,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(999),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white.withOpacity(.42),
+                    Colors.white.withOpacity(.02),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 6,
+            right: 7,
+            child: Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(.08),
+              ),
+            ),
+          ),
+          Center(
+            child: Container(
+              width: size * .52,
+              height: size * .52,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(.10),
+                border: Border.all(
+                  color: Colors.white.withOpacity(.10),
+                ),
+              ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: iconSize,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _profileHeader() {
+  Widget _premiumProfileHeader() {
     final progress = _profileCompletion();
     final percent = (progress * 100).round();
+    final membership = _membershipLabel(progress);
 
     return Container(
       decoration: BoxDecoration(
-        gradient: _headerGradient,
-        borderRadius: BorderRadius.circular(30),
+        gradient: _heroGradient,
+        borderRadius: BorderRadius.circular(32),
         boxShadow: _strongGlow,
       ),
       child: Stack(
         children: [
           Positioned(
-            top: -30,
-            right: -20,
-            child: _bgOrb(110, Colors.white.withOpacity(.08)),
+            top: -35,
+            right: -18,
+            child: _glowOrb(120, Colors.white.withOpacity(.08)),
           ),
           Positioned(
-            bottom: -40,
-            left: -10,
-            child: _bgOrb(90, Colors.white.withOpacity(.05)),
+            bottom: -34,
+            left: -8,
+            child: _glowOrb(100, Colors.white.withOpacity(.05)),
+          ),
+          Positioned(
+            top: 18,
+            left: 18,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(.10),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: Colors.white.withOpacity(.10)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.verified_rounded,
+                    size: 15,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    _isArabic ? 'حساب موثّق' : 'Verified Account',
+                    style: GoogleFonts.cairo(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 11.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+            padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
             child: Column(
               children: [
                 Row(
@@ -572,17 +795,23 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                       alignment: Alignment.bottomRight,
                       children: [
                         Container(
-                          width: 94,
-                          height: 94,
+                          width: 96,
+                          height: 96,
                           padding: const EdgeInsets.all(3),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(.14),
                             shape: BoxShape.circle,
                             border: Border.all(
-                                color: Colors.white.withOpacity(.20)),
+                              color: Colors.white.withOpacity(.20),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.white.withOpacity(.06),
+                                blurRadius: 18,
+                              ),
+                            ],
                           ),
                           child: CircleAvatar(
-                            backgroundColor: Colors.black.withOpacity(.12),
+                            backgroundColor: Colors.black.withOpacity(.16),
                             backgroundImage: _profileImage != null
                                 ? FileImage(_profileImage!)
                                 : null,
@@ -598,13 +827,28 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                         GestureDetector(
                           onTap: _pickImage,
                           child: Container(
-                            width: 34,
-                            height: 34,
+                            width: 38,
+                            height: 38,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              gradient: const LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.white,
+                                  Color(0xFFEAF3FF),
+                                ],
+                              ),
                               shape: BoxShape.circle,
                               border: Border.all(
-                                  color: Colors.white.withOpacity(.20)),
+                                color: Colors.white.withOpacity(.18),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(.12),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
                             ),
                             child: Icon(
                               Icons.camera_alt_rounded,
@@ -621,50 +865,31 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
+                            _greeting(),
+                            style: GoogleFonts.cairo(
+                              color: Colors.white.withOpacity(.78),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
                             _userName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.cairo(
                               color: Colors.white,
                               fontWeight: FontWeight.w900,
-                              fontSize: 20,
+                              fontSize: 21,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 6),
                           Text(
-                            _isArabic
-                                ? 'الحساب نشط وموثق'
-                                : 'Account active and verified',
+                            membership,
                             style: GoogleFonts.cairo(
-                              color: Colors.white.withOpacity(.82),
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12.5,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          InkWell(
-                            onTap: _editName,
-                            borderRadius: BorderRadius.circular(999),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(.14),
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(.14),
-                                ),
-                              ),
-                              child: Text(
-                                _isArabic ? 'تعديل الاسم' : 'Edit name',
-                                style: GoogleFonts.cairo(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 12.5,
-                                ),
-                              ),
+                              color: Colors.white.withOpacity(.88),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12.8,
                             ),
                           ),
                         ],
@@ -674,11 +899,11 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                 ),
                 const SizedBox(height: 18),
                 Container(
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(15),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(.10),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withOpacity(.12)),
+                    color: Colors.white.withOpacity(.08),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(color: Colors.white.withOpacity(.10)),
                   ),
                   child: Column(
                     children: [
@@ -692,14 +917,14 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                               style: GoogleFonts.cairo(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w900,
-                                fontSize: 13.6,
+                                fontSize: 13.8,
                               ),
                             ),
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
+                              horizontal: 11,
+                              vertical: 6,
                             ),
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -716,13 +941,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 11),
                       ClipRRect(
                         borderRadius: BorderRadius.circular(999),
                         child: LinearProgressIndicator(
                           value: progress,
-                          minHeight: 10,
-                          backgroundColor: Colors.white.withOpacity(.18),
+                          minHeight: 11,
+                          backgroundColor: Colors.white.withOpacity(.16),
                           valueColor:
                               const AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
@@ -733,7 +958,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                         child: Text(
                           _completionText(progress),
                           style: GoogleFonts.cairo(
-                            color: Colors.white.withOpacity(.84),
+                            color: Colors.white.withOpacity(.82),
                             fontWeight: FontWeight.w700,
                             fontSize: 12,
                           ),
@@ -750,53 +975,69 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     );
   }
 
-  Widget _statsRow() {
+  Widget _quickInsightRow() {
+    final palettes = [
+      _paletteByIndex(0),
+      _paletteByIndex(2),
+      _paletteByIndex(3),
+    ];
+
     return Row(
       children: [
         Expanded(
-          child: _miniStat(
+          child: _insightCard(
             icon: Icons.directions_car_filled_rounded,
             value: '3',
             label: _isArabic ? 'مركبات' : 'Vehicles',
+            palette: palettes[0],
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: _miniStat(
+          child: _insightCard(
             icon: Icons.receipt_long_rounded,
             value: '12',
             label: _isArabic ? 'طلبات' : 'Orders',
+            palette: palettes[1],
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: _miniStat(
-            icon: Icons.verified_user_rounded,
+          child: _insightCard(
+            icon: Icons.shield_rounded,
             value: '100%',
             label: _isArabic ? 'موثّق' : 'Verified',
+            palette: palettes[2],
           ),
         ),
       ],
     );
   }
 
-  Widget _miniStat({
+  Widget _insightCard({
     required IconData icon,
     required String value,
     required String label,
+    required _DashboardPalette palette,
   }) {
-    return _solidCard(
+    return _glassCard(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(22),
       child: Column(
         children: [
-          _iconBadge(icon, size: 48, iconSize: 22),
+          _premiumIconShell(
+            icon: icon,
+            palette: palette,
+            size: 50,
+            iconSize: 18,
+            compact: true,
+          ),
           const SizedBox(height: 10),
           Text(
             value,
             style: GoogleFonts.cairo(
               color: _textMain,
-              fontSize: 17,
+              fontSize: 17.5,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -817,176 +1058,236 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   }
 
   Widget _dashboard() {
-    return GridView.count(
-      crossAxisCount: 2,
+    final items = <_DashboardItemData>[
+      _DashboardItemData(
+        icon: FontAwesomeIcons.store,
+        title: _isArabic ? 'المتجر' : 'Store',
+        subtitle:
+            _isArabic ? 'تصفح المنتجات والعروض' : 'Browse products and offers',
+        tag: _isArabic ? 'مميز' : 'Featured',
+        imagePath: 'assets/icons_bg/store_bg.png',
+        palette: _paletteByIndex(0),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const HomePage()),
+        ),
+      ),
+      _DashboardItemData(
+        icon: Icons.account_balance_wallet_rounded,
+        title: _isArabic ? 'المحفظة' : 'Wallet',
+        subtitle: _isArabic ? 'رصيدك وعمليات الدفع' : 'Balance and payments',
+        tag: _isArabic ? 'قريبًا' : 'Soon',
+        imagePath: 'assets/icons_bg/wallet_bg.png',
+        palette: _paletteByIndex(1),
+        onTap: () => _snack(
+          _isArabic
+              ? 'ميزة المحفظة قريبًا 💳'
+              : 'Wallet feature coming soon 💳',
+        ),
+      ),
+      _DashboardItemData(
+        icon: Icons.history_rounded,
+        title: _isArabic ? 'الطلبات' : 'Orders',
+        subtitle:
+            _isArabic ? 'طلباتك السابقة والحالية' : 'Past and current orders',
+        tag: _isArabic ? 'نشط' : 'Active',
+        imagePath: 'assets/icons_bg/orders_bg.png',
+        palette: _paletteByIndex(2),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const OrdersScreen()),
+        ),
+      ),
+      _DashboardItemData(
+        icon: Icons.directions_car_filled_rounded,
+        title: _isArabic ? 'مركباتي' : 'My Vehicles',
+        subtitle:
+            _isArabic ? 'إدارة سياراتك بسهولة' : 'Manage your cars easily',
+        tag: _isArabic ? '3 مركبات' : '3 vehicles',
+        imagePath: 'assets/icons_bg/cars_bg.png',
+        palette: _paletteByIndex(3),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const VehiclesScreen()),
+        ),
+      ),
+      _DashboardItemData(
+        icon: Icons.shield_rounded,
+        title: _isArabic ? 'الأمان' : 'Security',
+        subtitle:
+            _isArabic ? 'الحماية وكلمات المرور' : 'Protection and passwords',
+        tag: _isArabic ? 'آمن' : 'Safe',
+        imagePath: 'assets/icons_bg/security_bg.png',
+        palette: _paletteByIndex(4),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SecurityCenterScreen()),
+        ),
+      ),
+      _DashboardItemData(
+        icon: Icons.notifications_active_rounded,
+        title: _isArabic ? 'الإشعارات' : 'Alerts',
+        subtitle:
+            _isArabic ? 'تنبيهاتك وآخر التحديثات' : 'Alerts and latest updates',
+        tag: _isArabic ? 'جديد' : 'New',
+        imagePath: 'assets/icons_bg/alerts_bg.png',
+        palette: _paletteByIndex(5),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+        ),
+      ),
+    ];
+
+    return GridView.builder(
+      itemCount: items.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 14,
-      crossAxisSpacing: 14,
-      childAspectRatio: 0.95,
-      children: [
-        _dashboardCard(
-          icon: FontAwesomeIcons.store,
-          title: _isArabic ? 'المتجر' : 'Store',
-          subtitle: _isArabic
-              ? 'تصفح المنتجات والعروض'
-              : 'Browse products and offers',
-          tag: _isArabic ? 'مميز' : 'Featured',
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const HomePage()),
-          ),
-        ),
-        _dashboardCard(
-          icon: Icons.account_balance_wallet_rounded,
-          title: _isArabic ? 'المحفظة' : 'Wallet',
-          subtitle: _isArabic ? 'رصيدك وعمليات الدفع' : 'Balance and payments',
-          tag: _isArabic ? 'قريبًا' : 'Soon',
-          onTap: () => _snack(
-            _isArabic
-                ? 'ميزة المحفظة قريبًا 💳'
-                : 'Wallet feature coming soon 💳',
-          ),
-        ),
-        _dashboardCard(
-          icon: Icons.history_rounded,
-          title: _isArabic ? 'الطلبات' : 'Orders',
-          subtitle:
-              _isArabic ? 'طلباتك السابقة والحالية' : 'Past and current orders',
-          tag: _isArabic ? 'نشط' : 'Active',
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const OrdersScreen()),
-          ),
-        ),
-        _dashboardCard(
-          icon: Icons.directions_car_filled_rounded,
-          title: _isArabic ? 'مركباتي' : 'My Vehicles',
-          subtitle:
-              _isArabic ? 'إدارة سياراتك بسهولة' : 'Manage your cars easily',
-          tag: _isArabic ? '3 مركبات' : '3 vehicles',
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const VehiclesScreen()),
-          ),
-        ),
-        _dashboardCard(
-          icon: Icons.shield_rounded,
-          title: _isArabic ? 'الأمان' : 'Security',
-          subtitle:
-              _isArabic ? 'الحماية وكلمات المرور' : 'Protection and passwords',
-          tag: _isArabic ? 'آمن' : 'Safe',
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const SecurityCenterScreen()),
-          ),
-        ),
-        _dashboardCard(
-          icon: Icons.notifications_active_rounded,
-          title: _isArabic ? 'الإشعارات' : 'Alerts',
-          subtitle: _isArabic
-              ? 'تنبيهاتك وآخر التحديثات'
-              : 'Alerts and latest updates',
-          tag: _isArabic ? 'جديد' : 'New',
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-          ),
-        ),
-      ],
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        mainAxisSpacing: 14,
+        crossAxisSpacing: 14,
+        childAspectRatio: 0.72,
+      ),
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return _dashboardCard(item: item);
+      },
     );
   }
 
   Widget _dashboardCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required String tag,
-    required VoidCallback onTap,
+    required _DashboardItemData item,
   }) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => _tap(onTap),
-        borderRadius: BorderRadius.circular(24),
-        child: _solidCard(
-          padding: const EdgeInsets.all(16),
-          borderRadius: BorderRadius.circular(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  _iconBadge(icon, size: 58, iconSize: 25),
-                  const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _isDark
-                          ? Colors.white.withOpacity(.05)
-                          : AppTheme.accentSoft.withOpacity(.85),
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: _border),
-                    ),
-                    child: Text(
-                      tag,
-                      style: GoogleFonts.cairo(
-                        color: _isDark ? Colors.white : _primaryDark,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.cairo(
-                  color: _textMain,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                subtitle,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.cairo(
-                  color: _textSub,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                  height: 1.25,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Text(
-                    _isArabic ? 'فتح' : 'Open',
-                    style: GoogleFonts.cairo(
-                      color: _primary,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 12.8,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Icon(
-                    _isArabic
-                        ? Icons.arrow_back_rounded
-                        : Icons.arrow_forward_rounded,
-                    color: _primary,
-                    size: 18,
-                  ),
-                ],
+        onTap: () => _tap(item.onTap),
+        borderRadius: BorderRadius.circular(28),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: item.palette.base.withOpacity(.08),
+                blurRadius: 22,
+                offset: const Offset(0, 12),
               ),
             ],
+          ),
+          child: _glassCard(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+            borderRadius: BorderRadius.circular(28),
+            glow: true,
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -18,
+                  right: -12,
+                  child: Container(
+                    width: 82,
+                    height: 82,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: item.palette.base.withOpacity(.08),
+                      boxShadow: [
+                        BoxShadow(
+                          color: item.palette.base.withOpacity(.12),
+                          blurRadius: 34,
+                          spreadRadius: 6,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        _premiumIconShell(
+                          icon: item.icon,
+                          palette: item.palette,
+                          size: 48,
+                          iconSize: 18,
+                          imagePath: item.imagePath,
+                          compact: true,
+                        ),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: item.palette.tagBg,
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: item.palette.base.withOpacity(.18),
+                            ),
+                          ),
+                          child: Text(
+                            item.tag,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.cairo(
+                              color: _textMain,
+                              fontSize: 9.8,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    Text(
+                      item.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.cairo(
+                        color: const Color(0xFFF8FBFF),
+                        fontSize: 15.6,
+                        fontWeight: FontWeight.w900,
+                        height: 1.1,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      item.subtitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.cairo(
+                        color: const Color(0xFFD8E6FA),
+                        fontSize: 11.3,
+                        fontWeight: FontWeight.w700,
+                        height: 1.32,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Text(
+                          _isArabic ? 'فتح' : 'Open',
+                          style: GoogleFonts.cairo(
+                            color: item.palette.soft,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 12.2,
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Icon(
+                          _isArabic
+                              ? Icons.arrow_back_rounded
+                              : Icons.arrow_forward_rounded,
+                          color: item.palette.soft,
+                          size: 17,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1001,11 +1302,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           title: _isArabic ? 'اللغة' : 'Language',
           subtitle: _language == 'ar' ? 'العربية' : 'English',
           trailing: _langDropdown(),
+          palette: _paletteByIndex(0),
         ),
         _settingSwitchTile(
           icon: Icons.notifications_active_rounded,
           title: _isArabic ? 'الإشعارات' : 'Notifications',
           value: _notificationsEnabled,
+          palette: _paletteByIndex(5),
           onChanged: (v) {
             setState(() => _notificationsEnabled = v);
             _save();
@@ -1017,6 +1320,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           subtitle: _isArabic
               ? 'إعدادات الحماية والخصوصية'
               : 'Protection and privacy settings',
+          palette: _paletteByIndex(4),
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const SecurityCenterScreen()),
@@ -1026,6 +1330,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           icon: Icons.notifications_none_rounded,
           title: _isArabic ? 'مركز الإشعارات' : 'Notification Center',
           subtitle: _isArabic ? 'عرض آخر التنبيهات' : 'View latest alerts',
+          palette: _paletteByIndex(2),
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const NotificationsScreen()),
@@ -1038,6 +1343,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   Widget _settingTile({
     required IconData icon,
     required String title,
+    required _DashboardPalette palette,
     String? subtitle,
     Widget? trailing,
     VoidCallback? onTap,
@@ -1048,13 +1354,19 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap == null ? null : () => _tap(onTap),
-          borderRadius: BorderRadius.circular(20),
-          child: _solidCard(
+          borderRadius: BorderRadius.circular(22),
+          child: _glassCard(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(22),
             child: Row(
               children: [
-                _iconBadge(icon, size: 52, iconSize: 24),
+                _premiumIconShell(
+                  icon: icon,
+                  palette: palette,
+                  size: 48,
+                  iconSize: 18,
+                  compact: true,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -1066,7 +1378,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.cairo(
                           color: _textMain,
-                          fontSize: 15.3,
+                          fontSize: 15.4,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -1107,16 +1419,23 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     required IconData icon,
     required String title,
     required bool value,
+    required _DashboardPalette palette,
     required ValueChanged<bool> onChanged,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: _solidCard(
+      child: _glassCard(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         child: Row(
           children: [
-            _iconBadge(icon, size: 52, iconSize: 24),
+            _premiumIconShell(
+              icon: icon,
+              palette: palette,
+              size: 48,
+              iconSize: 18,
+              compact: true,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -1125,7 +1444,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.cairo(
                   color: _textMain,
-                  fontSize: 15.3,
+                  fontSize: 15.4,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -1133,7 +1452,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             Switch(
               value: value,
               onChanged: (v) => _tap(() => onChanged(v)),
-              activeColor: _primary,
+              activeColor: palette.base,
+              activeTrackColor: palette.soft.withOpacity(.45),
             ),
           ],
         ),
@@ -1146,7 +1466,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       value: _language,
       underline: const SizedBox(),
       borderRadius: BorderRadius.circular(16),
-      dropdownColor: _surface,
+      dropdownColor: _surface2,
       style: GoogleFonts.cairo(
         color: _textMain,
         fontWeight: FontWeight.w900,
@@ -1171,6 +1491,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           child: _supportButton(
             icon: FontAwesomeIcons.whatsapp,
             text: 'WhatsApp',
+            palette: _paletteByIndex(3),
             onTap: () => _contact('whatsapp'),
           ),
         ),
@@ -1179,6 +1500,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           child: _supportButton(
             icon: Icons.email_rounded,
             text: 'Email',
+            palette: _paletteByIndex(1),
             onTap: () => _contact('email'),
           ),
         ),
@@ -1187,6 +1509,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           child: _supportButton(
             icon: Icons.phone_rounded,
             text: 'Call',
+            palette: _paletteByIndex(4),
             onTap: () => _contact('call'),
           ),
         ),
@@ -1197,17 +1520,24 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   Widget _supportButton({
     required IconData icon,
     required String text,
+    required _DashboardPalette palette,
     required VoidCallback onTap,
   }) {
     return InkWell(
       onTap: () => _tap(onTap),
-      borderRadius: BorderRadius.circular(20),
-      child: _solidCard(
+      borderRadius: BorderRadius.circular(22),
+      child: _glassCard(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         child: Column(
           children: [
-            _iconBadge(icon, size: 50, iconSize: 22),
+            _premiumIconShell(
+              icon: icon,
+              palette: palette,
+              size: 48,
+              iconSize: 17,
+              compact: true,
+            ),
             const SizedBox(height: 10),
             Text(
               text,
@@ -1226,32 +1556,188 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   }
 
   Widget _logout() {
-    return SizedBox(
-      height: 56,
-      child: ElevatedButton.icon(
-        icon: const Icon(Icons.logout_rounded, color: Colors.white),
-        label: Text(
-          _isArabic ? 'تسجيل الخروج' : 'Logout',
-          style: GoogleFonts.cairo(
-            fontWeight: FontWeight.w900,
-            color: Colors.white,
-            fontSize: 15.5,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: _danger.withOpacity(.22),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
           ),
-        ),
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          backgroundColor: _danger,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+        ],
+      ),
+      child: SizedBox(
+        height: 58,
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          icon: const Icon(Icons.logout_rounded, color: Colors.white),
+          label: Text(
+            _isArabic ? 'تسجيل الخروج' : 'Logout',
+            style: GoogleFonts.cairo(
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              fontSize: 15.6,
+            ),
           ),
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            backgroundColor: _danger,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+          onPressed: () async {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.clear();
+            if (!mounted) return;
+            Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+          },
         ),
-        onPressed: () async {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.clear();
-          if (!mounted) return;
-          Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
-        },
       ),
     );
+  }
+}
+
+class _DashboardItemData {
+  const _DashboardItemData({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.tag,
+    required this.palette,
+    required this.onTap,
+    this.imagePath,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String tag;
+  final _DashboardPalette palette;
+  final VoidCallback onTap;
+  final String? imagePath;
+}
+
+class _DashboardPalette {
+  const _DashboardPalette({
+    required this.base,
+    required this.strong,
+    required this.soft,
+    required this.tagBg,
+  });
+
+  final Color base;
+  final Color strong;
+  final Color soft;
+  final Color tagBg;
+}
+
+class _AccountBackgroundPainter extends CustomPainter {
+  _AccountBackgroundPainter({
+    required this.progress,
+  });
+
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double shift = progress * 140;
+
+    final Paint softLine = Paint()
+      ..color = Colors.white.withOpacity(.016)
+      ..strokeWidth = 16
+      ..style = PaintingStyle.stroke;
+
+    final Paint brightLine = Paint()
+      ..color = const Color(0xFF8FBFFF).withOpacity(.045)
+      ..strokeWidth = 12
+      ..style = PaintingStyle.stroke;
+
+    for (double x = -size.width; x < size.width * 2; x += 96) {
+      canvas.drawLine(
+        Offset(x - shift, -40),
+        Offset(x + size.height * .54 - shift, size.height + 50),
+        softLine,
+      );
+    }
+
+    for (double x = -size.width + 30; x < size.width * 2; x += 180) {
+      canvas.drawLine(
+        Offset(x - shift * .55, -40),
+        Offset(x + size.height * .48 - shift * .55, size.height + 60),
+        brightLine,
+      );
+    }
+
+    final Paint wave = Paint()
+      ..color = const Color(0xFF9BC8FF).withOpacity(.07)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.1;
+
+    final Path topWave = Path()
+      ..moveTo(0, size.height * .16)
+      ..quadraticBezierTo(
+        size.width * .25,
+        size.height * .08,
+        size.width * .54,
+        size.height * .16,
+      )
+      ..quadraticBezierTo(
+        size.width * .78,
+        size.height * .22,
+        size.width,
+        size.height * .13,
+      );
+
+    final Path bottomWave = Path()
+      ..moveTo(0, size.height * .82)
+      ..quadraticBezierTo(
+        size.width * .20,
+        size.height * .78,
+        size.width * .42,
+        size.height * .86,
+      )
+      ..quadraticBezierTo(
+        size.width * .74,
+        size.height * .96,
+        size.width,
+        size.height * .89,
+      );
+
+    canvas.drawPath(topWave, wave);
+    canvas.drawPath(bottomWave, wave);
+
+    final Paint dotPaint = Paint()
+      ..color = const Color(0xFFB9D8FF).withOpacity(.05);
+
+    for (double x = 18; x < size.width; x += 56) {
+      canvas.drawCircle(Offset(x, size.height * .24), 1.25, dotPaint);
+    }
+
+    for (double x = 14; x < size.width; x += 62) {
+      canvas.drawCircle(Offset(x, size.height * .72), 1.15, dotPaint);
+    }
+
+    final Paint ringPaint = Paint()
+      ..color = const Color(0xFF9BC8FF).withOpacity(.045)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+
+    canvas.drawCircle(
+      Offset(size.width * .86, size.height * .18),
+      34,
+      ringPaint,
+    );
+    canvas.drawCircle(
+      Offset(size.width * .16, size.height * .58),
+      26,
+      ringPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _AccountBackgroundPainter oldDelegate) {
+    return oldDelegate.progress != progress;
   }
 }

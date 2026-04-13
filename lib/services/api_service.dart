@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as p;
 
 class ApiService {
   // ============================================================
@@ -27,6 +28,9 @@ class ApiService {
   }
 
   static String get _webFallbackBase => "http://localhost:$defaultPort";
+
+  // ده الـ IP الصحيح بتاع اللاب على شبكة الواي فاي الحالية
+  static String get _realDeviceWifiBase => "http://192.168.1.20:$defaultPort";
 
   static bool _looksLocalhostHost(String host) {
     final h = host.toLowerCase().trim();
@@ -78,53 +82,59 @@ class ApiService {
     return "${u.scheme}://${u.host}$port";
   }
 
-  /// ✅ baseUrl النهائي
+  static void _warnInvalidDeviceBase(String finalUrl) {
+    if (!debugLogs) return;
+    debugPrint(
+      "❌ BASE_URL غير صالح على جهاز حقيقي: $finalUrl\n"
+      "لا تستخدم localhost / 127.0.0.1 / 0.0.0.0 على الموبايل.\n"
+      "استخدم IP اللاب على نفس الواي فاي مثل: $_realDeviceWifiBase\n"
+      "أو استخدم رابط public لو هتجرب من خارج الشبكة.",
+    );
+  }
+
   static String get baseUrl {
     final raw = _baseUrlRaw.isNotEmpty ? _baseUrlRaw : _webFallbackBase;
     final parsed = _safeParseBase(raw);
 
-    // Web
     if (kIsWeb) {
-      final finalUrl = _join(_buildBase(parsed), apiPrefix);
-      if (debugLogs) debugPrint("🌐 WEB baseUrl => $finalUrl");
+      final finalUrl = "http://localhost:$defaultPort$apiPrefix";
+      if (debugLogs) debugPrint("🌐 WEB baseUrl (FORCED) => $finalUrl");
       return finalUrl;
     }
 
-    // Android
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      if (forceAndroidEmulator) {
-        final emulatorUri = Uri(
-          scheme: parsed.scheme.isNotEmpty ? parsed.scheme : "http",
-          host: "10.0.2.2",
-          port: parsed.hasPort ? parsed.port : defaultPort,
-        );
-        final finalUrl = _join(_buildBase(emulatorUri), apiPrefix);
-        if (debugLogs) debugPrint("🤖 ANDROID EMULATOR baseUrl => $finalUrl");
-        return finalUrl;
-      }
+    if (defaultTargetPlatform == TargetPlatform.android &&
+        forceAndroidEmulator) {
+      final finalUrl = "http://10.0.2.2:$defaultPort$apiPrefix";
+      if (debugLogs) debugPrint("🤖 ANDROID EMULATOR baseUrl => $finalUrl");
+      return finalUrl;
+    }
 
-      // Android real device
-      final finalUrl = _join(_buildBase(parsed), apiPrefix);
+    // على الجهاز الحقيقي:
+    // - لو BASE_URL في env هو localhost/127/0.0.0.0 => استخدم IP الواي فاي الصحيح
+    // - لو BASE_URL موجود لكنه 172.21.x.x من vEthernet، فده غالبًا مش المناسب للموبايل الحقيقي
+    //   وبرضه نبدله بـ IP الواي فاي
+    // - غير كده استخدم BASE_URL كما هو
+    String chosenBase;
+    if (_looksLocalhostHost(parsed.host) || parsed.host.startsWith("172.21.")) {
+      final invalidUrl = _join(_buildBase(parsed), apiPrefix);
+      _warnInvalidDeviceBase(invalidUrl);
+      chosenBase = _realDeviceWifiBase;
+    } else {
+      chosenBase = _buildBase(parsed);
+    }
 
-      if (_looksLocalhostHost(parsed.host)) {
-        if (debugLogs) {
-          debugPrint(
-            "❌ BASE_URL غير صالح على Android Device الحقيقي: $finalUrl\n"
-            "لا تستخدم localhost / 127.0.0.1 / 0.0.0.0 على الموبايل.\n"
-            "استخدم IP اللاب على نفس الواي فاي مثل: http://192.168.1.18:$defaultPort\n"
-            "أو استخدم رابط public لو هتجرب من الداتا.",
-          );
-        }
+    final finalUrl = _join(chosenBase, apiPrefix);
+
+    if (debugLogs) {
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        debugPrint("📱 ANDROID DEVICE baseUrl => $finalUrl");
+      } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+        debugPrint("📱 IOS DEVICE baseUrl => $finalUrl");
       } else {
-        if (debugLogs) debugPrint("📱 ANDROID DEVICE baseUrl => $finalUrl");
+        debugPrint("🖥️ OTHER PLATFORM baseUrl => $finalUrl");
       }
-
-      return finalUrl;
     }
 
-    // iOS / Desktop
-    final finalUrl = _join(_buildBase(parsed), apiPrefix);
-    if (debugLogs) debugPrint("🖥️ OTHER PLATFORM baseUrl => $finalUrl");
     return finalUrl;
   }
 
@@ -140,8 +150,8 @@ class ApiService {
   // ============================================================
 
   static Duration get timeout {
-    final s = int.tryParse((dotenv.env["HTTP_TIMEOUT_SECONDS"] ?? "18").trim());
-    return Duration(seconds: (s ?? 18).clamp(5, 120));
+    final s = int.tryParse((dotenv.env["HTTP_TIMEOUT_SECONDS"] ?? "30").trim());
+    return Duration(seconds: (s ?? 30).clamp(5, 120));
   }
 
   // ============================================================
@@ -161,13 +171,23 @@ class ApiService {
     };
   }
 
+  static Future<Map<String, String>> _multipartHeaders({
+    bool auth = false,
+  }) async {
+    final token = auth ? await getToken() : null;
+    return {
+      "Accept": "application/json",
+      if (token != null && token.isNotEmpty) "Authorization": "Bearer $token",
+    };
+  }
+
   // ============================================================
   // URL + DECODING
   // ============================================================
 
   static Uri _u(String path) {
-    final p = path.startsWith("/") ? path : "/$path";
-    return Uri.parse("$baseUrl$p");
+    final pth = path.startsWith("/") ? path : "/$path";
+    return Uri.parse("$baseUrl$pth");
   }
 
   static dynamic _decodeBody(http.Response res) {
@@ -272,7 +292,7 @@ class ApiService {
   }
 
   // ============================================================
-  // REQUESTS
+  // INTERNAL HELPERS
   // ============================================================
 
   static Future<Map<String, dynamic>> _sendJson({
@@ -368,6 +388,106 @@ class ApiService {
     }
   }
 
+  static Future<Map<String, dynamic>> _sendMultipart({
+    required String tag,
+    required String path,
+    required List<_MultipartFileItem> files,
+    Map<String, String>? fields,
+    bool auth = true,
+    bool retryOnce = true,
+  }) async {
+    final url = _u(path);
+    final sw = Stopwatch()..start();
+
+    try {
+      final headers = await _multipartHeaders(auth: auth);
+
+      _logReq(
+        tag: tag,
+        url: url,
+        headers: headers,
+        body: {
+          "fields": fields ?? {},
+          "files": files.map((e) => "${e.field}: ${e.path}").toList(),
+        },
+      );
+
+      final request = http.MultipartRequest("POST", url);
+      request.headers.addAll(headers);
+
+      if (fields != null) {
+        request.fields.addAll(fields);
+      }
+
+      for (final file in files) {
+        if (file.path.trim().isEmpty) continue;
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            file.field,
+            file.path,
+            filename: p.basename(file.path),
+          ),
+        );
+      }
+
+      final streamed = await request.send().timeout(timeout);
+      final res = await http.Response.fromStream(streamed);
+
+      sw.stop();
+      _logRes(
+        tag: tag,
+        status: res.statusCode,
+        body: res.body,
+        ms: sw.elapsedMilliseconds,
+      );
+
+      final decoded = _decodeBody(res);
+
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        if (decoded is Map<String, dynamic>) return decoded;
+        return {"success": true, "data": decoded};
+      }
+
+      if (res.statusCode == 401) {
+        await clearToken();
+      }
+
+      return _normalizeError(res, decoded,
+          fallback: "Multipart request failed");
+    } on TimeoutException catch (e) {
+      sw.stop();
+
+      if (debugLogs) debugPrint("❌ $tag TIMEOUT => ${_errToMessage(e)}");
+
+      if (retryOnce) {
+        if (debugLogs) debugPrint("🔁 $tag RETRY مرة واحدة...");
+        await Future.delayed(const Duration(milliseconds: 350));
+        return _sendMultipart(
+          tag: tag,
+          path: path,
+          files: files,
+          fields: fields,
+          auth: auth,
+          retryOnce: false,
+        );
+      }
+
+      return {"error": true, "message": "السيرفر مش بيرد (Timeout)"};
+    } catch (e, s) {
+      sw.stop();
+
+      if (debugLogs) {
+        debugPrint("❌ $tag ERROR => ${_errToMessage(e)}");
+        debugPrint(s.toString());
+      }
+
+      return {
+        "error": true,
+        "message": "تعذر رفع الملفات: ${_errToMessage(e)}",
+      };
+    }
+  }
+
   // ============================================================
   // CONNECTION CHECK
   // ============================================================
@@ -386,8 +506,11 @@ class ApiService {
   // AUTH
   // ============================================================
 
-  static Future<Map<String, dynamic>> login(String email, String password,
-      {bool retryOnce = true}) async {
+  static Future<Map<String, dynamic>> login(
+    String email,
+    String password, {
+    bool retryOnce = true,
+  }) async {
     final res = await _sendJson(
       tag: "LOGIN",
       method: "POST",
@@ -711,4 +834,228 @@ class ApiService {
       retryOnce: true,
     );
   }
+
+  // ============================================================
+  // ACCIDENT / EMERGENCY
+  // ============================================================
+
+  static Future<Map<String, dynamic>> uploadAccidentImages(
+    List<String> imagePaths, {
+    Map<String, String>? fields,
+  }) async {
+    final validPaths = imagePaths.where((e) => e.trim().isNotEmpty).toList();
+
+    if (validPaths.isEmpty) {
+      return {
+        "error": true,
+        "message": "لا توجد صور لرفعها",
+      };
+    }
+
+    return _sendMultipart(
+      tag: "UPLOAD_ACCIDENT_IMAGES",
+      path: "/accidents/upload-images",
+      auth: true,
+      fields: fields,
+      files: validPaths
+          .map((path) => _MultipartFileItem(field: "images", path: path))
+          .toList(),
+    );
+  }
+
+  static Future<Map<String, dynamic>> uploadAccidentAudio(
+    String audioPath, {
+    Map<String, String>? fields,
+  }) async {
+    if (audioPath.trim().isEmpty) {
+      return {
+        "error": true,
+        "message": "لا يوجد ملف صوتي لرفعه",
+      };
+    }
+
+    return _sendMultipart(
+      tag: "UPLOAD_ACCIDENT_AUDIO",
+      path: "/accidents/upload-audio",
+      auth: true,
+      fields: fields,
+      files: [
+        _MultipartFileItem(field: "audio", path: audioPath),
+      ],
+    );
+  }
+
+  static Future<Map<String, dynamic>> createEmergencyAccident({
+    required double lat,
+    required double lng,
+    String? address,
+    String? notes,
+    List<String>? imageUrls,
+    String? audioUrl,
+    String? emergencyContactName,
+    String? emergencyContactPhone,
+    String? status,
+    String? serviceType,
+    String? vehicleId,
+  }) {
+    return _sendJson(
+      tag: "CREATE_EMERGENCY_ACCIDENT",
+      method: "POST",
+      path: "/accidents/emergency",
+      auth: true,
+      body: {
+        "lat": lat,
+        "lng": lng,
+        if (address != null && address.trim().isNotEmpty) "address": address,
+        if (notes != null && notes.trim().isNotEmpty) "notes": notes.trim(),
+        if (imageUrls != null) "imageUrls": imageUrls,
+        if (audioUrl != null && audioUrl.trim().isNotEmpty)
+          "audioUrl": audioUrl,
+        if (emergencyContactName != null &&
+            emergencyContactName.trim().isNotEmpty)
+          "emergencyContactName": emergencyContactName.trim(),
+        if (emergencyContactPhone != null &&
+            emergencyContactPhone.trim().isNotEmpty)
+          "emergencyContactPhone": emergencyContactPhone.trim(),
+        "status": status ?? "pending",
+        if (serviceType != null && serviceType.trim().isNotEmpty)
+          "serviceType": serviceType.trim(),
+        if (vehicleId != null && vehicleId.trim().isNotEmpty)
+          "vehicleId": vehicleId.trim(),
+      },
+      retryOnce: true,
+    );
+  }
+
+  static Future<Map<String, dynamic>> sendEmergencyNotification({
+    required String title,
+    required String body,
+    Map<String, dynamic>? data,
+  }) {
+    return _sendJson(
+      tag: "SEND_EMERGENCY_NOTIFICATION",
+      method: "POST",
+      path: "/accidents/notify",
+      auth: true,
+      body: {
+        "title": title,
+        "body": body,
+        if (data != null) "data": data,
+      },
+      retryOnce: true,
+    );
+  }
+
+  static Future<Map<String, dynamic>> submitEmergencyCase({
+    required double lat,
+    required double lng,
+    String? address,
+    String? notes,
+    List<String>? imagePaths,
+    String? audioPath,
+    String? emergencyContactName,
+    String? emergencyContactPhone,
+    String? serviceType,
+    String? vehicleId,
+  }) async {
+    final List<String> uploadedImageUrls = [];
+    String? uploadedAudioUrl;
+
+    if (imagePaths != null && imagePaths.isNotEmpty) {
+      final imgRes = await uploadAccidentImages(imagePaths);
+      if (imgRes["error"] == true) return imgRes;
+
+      final urls = _extractUploadedUrls(imgRes, keyCandidates: const [
+        "urls",
+        "imageUrls",
+        "files",
+      ]);
+      uploadedImageUrls.addAll(urls);
+    }
+
+    if (audioPath != null && audioPath.trim().isNotEmpty) {
+      final audioRes = await uploadAccidentAudio(audioPath);
+      if (audioRes["error"] == true) return audioRes;
+
+      uploadedAudioUrl =
+          _extractSingleUploadedUrl(audioRes, keyCandidates: const [
+        "url",
+        "audioUrl",
+        "file",
+      ]);
+    }
+
+    return createEmergencyAccident(
+      lat: lat,
+      lng: lng,
+      address: address,
+      notes: notes,
+      imageUrls: uploadedImageUrls,
+      audioUrl: uploadedAudioUrl,
+      emergencyContactName: emergencyContactName,
+      emergencyContactPhone: emergencyContactPhone,
+      serviceType: serviceType,
+      vehicleId: vehicleId,
+    );
+  }
+
+  static List<String> _extractUploadedUrls(
+    Map<String, dynamic> res, {
+    required List<String> keyCandidates,
+  }) {
+    for (final key in keyCandidates) {
+      final value = res[key];
+      if (value is List) {
+        return value.map((e) => e.toString()).toList();
+      }
+    }
+
+    final data = res["data"];
+    if (data is Map<String, dynamic>) {
+      for (final key in keyCandidates) {
+        final value = data[key];
+        if (value is List) {
+          return value.map((e) => e.toString()).toList();
+        }
+      }
+    }
+
+    return [];
+  }
+
+  static String? _extractSingleUploadedUrl(
+    Map<String, dynamic> res, {
+    required List<String> keyCandidates,
+  }) {
+    for (final key in keyCandidates) {
+      final value = res[key];
+      if (value != null && value.toString().trim().isNotEmpty) {
+        return value.toString();
+      }
+    }
+
+    final data = res["data"];
+    if (data is Map<String, dynamic>) {
+      for (final key in keyCandidates) {
+        final value = data[key];
+        if (value != null && value.toString().trim().isNotEmpty) {
+          return value.toString();
+        }
+      }
+    }
+
+    return null;
+  }
 }
+
+class _MultipartFileItem {
+  final String field;
+  final String path;
+
+  const _MultipartFileItem({
+    required this.field,
+    required this.path,
+  });
+}
+
+// flutter run -d RK8TC01A1WP

@@ -1,4 +1,4 @@
-// PATH: lib/screens/role_selection_screen.dart
+// lib/screens/role_selection_screen.dart
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:math' as math;
@@ -19,60 +19,77 @@ class RoleSelectionScreen extends StatefulWidget {
 }
 
 class _RoleSelectionScreenState extends State<RoleSelectionScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   static const String _kIsLoggedInKey = 'isLoggedIn';
   static const String _kTokenKey = 'token';
   static const String _kUserIdKey = 'userId';
   static const String _kSelectedRoleKey = 'selectedRole';
   static const String _kForceLoginOnceKey = 'forceLoginOnce';
 
-  // =========================
-  // Premium Dark Automotive Theme
-  // =========================
-  static const Color _bgTop = Color(0xFF06162E);
-  static const Color _bgMid = Color(0xFF0A2245);
-  static const Color _bgBottom = Color(0xFF030A16);
+  static const Color _bgStart = Color(0xFF090B12);
+  static const Color _bgMid = Color(0xFF07111A);
+  static const Color _bgEnd = Color(0xFF05070D);
 
-  static const Color _primaryBlue = Color(0xFF1B4F9C);
-  static const Color _primaryBlue2 = Color(0xFF143F7C);
-  static const Color _primaryBlue3 = Color(0xFF2D66BD);
-  static const Color _cyanGlow = Color(0xFF5EA9FF);
-  static const Color _electric = Color(0xFF79C3FF);
+  static const Color _panel = Color(0xFF18232B);
+  static const Color _panelTop = Color(0xFF8EA1A9);
 
-  static const Color _white = Color(0xFFF7F9FC);
-  static const Color _muted = Color(0xFFC9D6EA);
-  static const Color _muted2 = Color(0xFF90A8CB);
-  static const Color _success = Color(0xFF74D2A7);
+  static const Color _accent = Color.fromARGB(255, 8, 89, 143);
+  static const Color _accentDark = Color.fromARGB(255, 33, 129, 194);
+  static const Color _accentSoft = Color.fromARGB(255, 94, 176, 217);
+  static const Color _accentGlow = Color(0xFF8FD3FF);
+
+  static const Color _text = Color(0xFFF4F6F8);
+  static const Color _muted = Color(0xFFB7C1C7);
+  static const Color _hint = Color(0xFF93A1A8);
+  static const Color _lime = Color.fromARGB(255, 25, 180, 232);
+  static const Color _success = Color(0xFF7DD3AE);
 
   String? selectedRole;
   bool _saving = false;
-  String? _pressedRole;
 
-  late final AnimationController _controller;
+  late final AnimationController _pageController;
+  late final AnimationController _backgroundController;
   late final Animation<double> _fade;
-  late final Animation<double> _slide;
   late final Animation<double> _scale;
+  late final Animation<Offset> _offset;
 
   @override
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: _bgEnd,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
+
+    _pageController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 950),
+      duration: const Duration(milliseconds: 900),
     )..forward();
 
+    _backgroundController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 12000),
+    )..repeat();
+
     _fade = CurvedAnimation(
-      parent: _controller,
+      parent: _pageController,
       curve: Curves.easeOutCubic,
     );
 
-    _slide = Tween<double>(begin: 22, end: 0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    _scale = Tween<double>(begin: .985, end: 1).animate(
+      CurvedAnimation(parent: _pageController, curve: Curves.easeOutBack),
     );
 
-    _scale = Tween<double>(begin: .975, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+    _offset = Tween<Offset>(
+      begin: const Offset(0, .025),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _pageController, curve: Curves.easeOutCubic),
     );
 
     _loadSavedRole();
@@ -81,18 +98,25 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
   Future<void> _loadSavedRole() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final r = prefs.getString(_kSelectedRoleKey);
+      final role = prefs.getString(_kSelectedRoleKey);
       if (!mounted) return;
-      if (r != null && r.isNotEmpty) {
-        setState(() => selectedRole = r);
+      if (role != null && role.isNotEmpty) {
+        setState(() => selectedRole = role);
       }
     } catch (_) {}
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _pageController.dispose();
+    _backgroundController.dispose();
     super.dispose();
+  }
+
+  void _selectRole(String role) {
+    if (_saving) return;
+    HapticFeedback.selectionClick();
+    setState(() => selectedRole = role);
   }
 
   Future<void> _continue() async {
@@ -126,104 +150,96 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
     }
   }
 
-  void _select(String role) {
-    if (_saving) return;
-    HapticFeedback.selectionClick();
-    setState(() => selectedRole = role);
-  }
-
-  String get _selectedDescription {
+  String get _selectionTitle {
     switch (selectedRole) {
-      case 'driver':
-        return 'وضع الفني يتيح لك استقبال الطلبات، إدارة الحالات، ومتابعة العمل باحترافية.';
       case 'rider':
-        return 'وضع العميل يمنحك تجربة سريعة وسلسة لطلب الخدمة ومتابعتها خطوة بخطوة.';
+        return 'تم اختيار وضع العميل';
+      case 'driver':
+        return 'تم اختيار وضع الفني';
       default:
-        return 'اختر الوضع المناسب لطريقة استخدامك للتطبيق لتجربة أكثر دقة وراحة.';
+        return 'اختر الدور المناسب';
     }
   }
 
-  IconData get _selectedIcon {
+  String get _selectionDescription {
     switch (selectedRole) {
-      case 'driver':
-        return Icons.build_circle_outlined;
       case 'rider':
-        return Icons.route_rounded;
+        return 'واجهة أسهل وأوضح لطلب الخدمة ومتابعة الحالة بسرعة.';
+      case 'driver':
+        return 'واجهة عملية للفني لاستقبال الطلبات وإدارة المهام بكفاءة.';
+      default:
+        return 'اختر الدور المناسب الآن ويمكنك تغييره لاحقًا من داخل التطبيق.';
+    }
+  }
+
+  IconData get _selectionIcon {
+    switch (selectedRole) {
+      case 'rider':
+        return Icons.person_outline_rounded;
+      case 'driver':
+        return Icons.handyman_rounded;
       default:
         return Icons.tune_rounded;
     }
   }
 
-  String get _selectedTitle {
-    switch (selectedRole) {
-      case 'driver':
-        return 'تم اختيار وضع الفني';
-      case 'rider':
-        return 'تم اختيار وضع العميل';
-      default:
-        return 'لم يتم اختيار وضع بعد';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final bool canContinue = selectedRole != null;
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        body: Stack(
-          children: [
-            _buildBackground(),
-            SafeArea(
-              child: AnimatedBuilder(
-                animation: _controller,
-                builder: (_, __) {
-                  return Opacity(
-                    opacity: _fade.value,
-                    child: Transform.translate(
-                      offset: Offset(0, _slide.value),
-                      child: Transform.scale(
-                        scale: _scale.value,
+        body: AnimatedBuilder(
+          animation: _backgroundController,
+          builder: (_, __) {
+            return Stack(
+              children: [
+                _buildBackground(),
+                SafeArea(
+                  child: FadeTransition(
+                    opacity: _fade,
+                    child: SlideTransition(
+                      position: _offset,
+                      child: ScaleTransition(
+                        scale: _scale,
                         child: Column(
                           children: [
                             Expanded(
                               child: SingleChildScrollView(
                                 physics: const BouncingScrollPhysics(),
                                 padding:
-                                    const EdgeInsets.fromLTRB(18, 18, 18, 8),
+                                    const EdgeInsets.fromLTRB(20, 18, 20, 10),
                                 child: Column(
                                   children: [
-                                    const SizedBox(height: 2),
-                                    _buildLogoSection(),
-                                    const SizedBox(height: 30),
-                                    _buildTitleSection(),
-                                    const SizedBox(height: 26),
-                                    _buildMainRoleCard(),
-                                    const SizedBox(height: 18),
-                                    _buildSecondaryRoleCard(),
+                                    _buildTopBar(),
                                     const SizedBox(height: 22),
-                                    _buildSelectionInfo(),
+                                    _buildHeroPanel(),
                                     const SizedBox(height: 18),
-                                    _buildDividerText(),
+                                    _buildCustomerSpotlightCard(),
+                                    const SizedBox(height: 14),
+                                    _buildTechnicianCompactCard(),
                                     const SizedBox(height: 16),
-                                    _buildTermsText(),
-                                    const SizedBox(height: 20),
+                                    _buildSelectionInfo(),
+                                    const SizedBox(height: 12),
+                                    _buildHintText(),
                                   ],
                                 ),
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
-                              child: _buildBottomButton(),
+                              padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
+                              child: _buildBottomButton(canContinue),
                             ),
                           ],
                         ),
                       ),
                     ),
-                  );
-                },
-              ),
-            ),
-          ],
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -236,48 +252,64 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [_bgTop, _bgMid, _bgBottom],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [_bgStart, _bgMid, _bgEnd],
+                stops: [0.0, 0.44, 1.0],
               ),
             ),
           ),
         ),
         Positioned(
-          top: -80,
-          left: -30,
-          child: _glowBlob(260, _primaryBlue.withOpacity(.18)),
+          top: -120,
+          right: -80,
+          child: _glowBlob(
+            320,
+            const [
+              Color(0x552181C2),
+              Color(0x0008578F),
+            ],
+          ),
         ),
         Positioned(
-          top: 90,
-          right: -60,
-          child: _glowBlob(220, _cyanGlow.withOpacity(.08)),
+          top: 240,
+          left: -70,
+          child: _glowBlob(
+            230,
+            const [
+              Color(0x2208B4E8),
+              Color(0x0008B4E8),
+            ],
+          ),
         ),
         Positioned(
-          bottom: -70,
-          left: -50,
-          child: _glowBlob(240, _primaryBlue2.withOpacity(.16)),
-        ),
-        Positioned(
-          bottom: 90,
+          bottom: -100,
           right: -40,
-          child: _glowBlob(180, _primaryBlue3.withOpacity(.12)),
-        ),
-        Positioned.fill(
-          child: CustomPaint(
-            painter: _BackgroundPainter(),
+          child: _glowBlob(
+            230,
+            const [
+              Color(0x2219B4E8),
+              Color(0x0019B4E8),
+            ],
           ),
         ),
         Positioned.fill(
-          child: Container(
+          child: CustomPaint(
+            painter: _RoleBackgroundPainter(
+              progress: _backgroundController.value,
+            ),
+          ),
+        ),
+        Positioned.fill(
+          child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: RadialGradient(
-                center: const Alignment(0, 0.82),
+                center: const Alignment(0, .82),
                 radius: 1.22,
                 colors: [
                   Colors.transparent,
-                  Colors.black.withOpacity(.16),
-                  Colors.black.withOpacity(.34),
+                  Colors.black.withOpacity(.10),
+                  Colors.black.withOpacity(.22),
                 ],
               ),
             ),
@@ -287,421 +319,456 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
     );
   }
 
-  Widget _glowBlob(double size, Color color) {
+  Widget _glowBlob(double size, List<Color> colors) {
     return IgnorePointer(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(size),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 72, sigmaY: 72),
-          child: Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(size),
-            ),
-          ),
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(colors: colors),
         ),
       ),
     );
   }
 
-  Widget _buildLogoSection() {
-    return Column(
+  Widget _buildTopBar() {
+    return Row(
       children: [
-        ShaderMask(
-          shaderCallback: (bounds) {
-            return const LinearGradient(
-              colors: [
-                Color(0xFFFFFFFF),
-                Color(0xFFEAF1FB),
-                Color(0xFFBDD2F0),
-              ],
-            ).createShader(bounds);
-          },
-          child: const Text(
-            "DOCTOR\nCAR",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white,
-              height: .92,
-              fontSize: 31,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.25,
-            ),
+        const Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Doctor Car',
+                style: TextStyle(
+                  color: _text,
+                  fontSize: 21,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                'اختر الدور المناسب للبدء',
+                style: TextStyle(
+                  color: _muted,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 12),
         Container(
           width: 72,
-          height: 4.5,
+          height: 72,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(100),
+            borderRadius: BorderRadius.circular(22),
             gradient: const LinearGradient(
-              colors: [_primaryBlue3, Colors.white, _primaryBlue3],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [_accentDark, _accent],
             ),
             boxShadow: [
               BoxShadow(
-                color: _primaryBlue.withOpacity(.30),
-                blurRadius: 18,
+                color: _accentGlow.withOpacity(.22),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
               ),
             ],
+            border: Border.all(
+              color: Colors.white.withOpacity(.10),
+            ),
+          ),
+          child: const Icon(
+            Icons.directions_car_filled_rounded,
+            color: Colors.white,
+            size: 30,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildTitleSection() {
-    return Column(
-      children: [
-        const Text(
-          'اختر وضع الاستخدام المناسب',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: _white,
-            fontSize: 24,
-            fontWeight: FontWeight.w900,
-            shadows: [
-              Shadow(
-                color: Color(0x55284A84),
-                blurRadius: 14,
-              ),
-            ],
-          ),
+  Widget _buildHeroPanel() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        gradient: LinearGradient(
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+          colors: [
+            _panelTop.withOpacity(.14),
+            _panel.withOpacity(.90),
+            const Color(0xFF0F1720),
+          ],
         ),
-        const SizedBox(height: 8),
-        Text(
-          'واجهة مصممة لتمنحك أفضل تجربة حسب دورك داخل التطبيق',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: _muted.withOpacity(.88),
-            fontSize: 13.6,
-            fontWeight: FontWeight.w500,
-            height: 1.35,
-          ),
+        border: Border.all(
+          color: Colors.white.withOpacity(.08),
         ),
-      ],
-    );
-  }
-
-  Widget _buildMainRoleCard() {
-    final bool active = selectedRole == "rider";
-    final bool pressed = _pressedRole == "rider";
-
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _pressedRole = "rider"),
-      onTapCancel: () => setState(() => _pressedRole = null),
-      onTapUp: (_) => setState(() => _pressedRole = null),
-      child: AnimatedScale(
-        scale: pressed ? .985 : 1,
-        duration: const Duration(milliseconds: 120),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(34),
-          onTap: () => _select("rider"),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 280),
-            curve: Curves.easeOutCubic,
-            width: double.infinity,
-            padding: const EdgeInsets.all(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.22),
+            blurRadius: 24,
+            offset: const Offset(0, 14),
+          ),
+          BoxShadow(
+            color: _accentGlow.withOpacity(.08),
+            blurRadius: 28,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(34),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: active
-                    ? const [
-                        Color(0xFF1E549F),
-                        Color(0xFF174281),
-                        Color(0xFF0D2A58),
-                      ]
-                    : const [
-                        Color(0xFF173E79),
-                        Color(0xFF123564),
-                        Color(0xFF0B2447),
-                      ],
-              ),
+              color: _accentGlow.withOpacity(.10),
+              borderRadius: BorderRadius.circular(999),
               border: Border.all(
-                color: active
-                    ? Colors.white.withOpacity(.22)
-                    : Colors.white.withOpacity(.10),
-                width: active ? 1.45 : 1.0,
+                color: _accentGlow.withOpacity(.22),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: _primaryBlue.withOpacity(active ? .26 : .15),
-                  blurRadius: active ? 28 : 18,
-                  offset: const Offset(0, 14),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.auto_awesome_rounded,
+                  size: 15,
+                  color: _accentGlow,
+                ),
+                SizedBox(width: 6),
+                Text(
+                  'واجهة احترافية',
+                  style: TextStyle(
+                    color: _accentGlow,
+                    fontSize: 11.8,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ],
             ),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(34),
-                      child: CustomPaint(
-                        painter: _RiderCardPainter(active: active),
-                      ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'اختر طريقة استخدام التطبيق',
+            style: TextStyle(
+              color: _text,
+              fontSize: 25,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'تم تركيز التصميم على العميل بشكل أوضح، مع أيقونة هندسية مختلفة تمامًا عن الفني وشكل أنظف وأكثر احترافية.',
+            style: TextStyle(
+              color: _muted.withOpacity(.96),
+              fontSize: 14,
+              height: 1.6,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomerSpotlightCard() {
+    final bool active = selectedRole == 'rider';
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(32),
+      onTap: () => _selectRole('rider'),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(32),
+          gradient: LinearGradient(
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+            colors: active
+                ? const [
+                    Color(0xFF143956),
+                    Color(0xFF112E46),
+                    Color(0xFF0C2131),
+                  ]
+                : const [
+                    Color(0xFF121E27),
+                    Color(0xFF101821),
+                    Color(0xFF0B1218),
+                  ],
+          ),
+          border: Border.all(
+            color: active
+                ? _accentGlow.withOpacity(.52)
+                : Colors.white.withOpacity(.08),
+            width: active ? 1.5 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: active
+                  ? _accentGlow.withOpacity(.20)
+                  : Colors.black.withOpacity(.16),
+              blurRadius: active ? 30 : 18,
+              offset: const Offset(0, 14),
+            ),
+          ],
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final bool compact = constraints.maxWidth < 410;
+
+            if (compact) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      _CustomerPremiumIcon(active: active),
+                      const Spacer(),
+                      _buildSelector(active, highlight: _accentGlow),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    'العميل',
+                    style: TextStyle(
+                      color: _text,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
-                ),
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 220),
-                    child:
-                        _SelectionBadge(active: active, key: ValueKey(active)),
+                  const SizedBox(height: 8),
+                  Text(
+                    'لطلب الخدمة ومتابعة الحالة بسهولة، بتجربة مرنة وسريعة وواضحة من أول استخدام.',
+                    style: TextStyle(
+                      color: _muted.withOpacity(.96),
+                      fontSize: 14,
+                      height: 1.7,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-                Positioned(
-                  top: 10,
-                  left: 8,
-                  child: _GlassArrowCircle(
-                    glow: active ? .24 : .14,
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: const [
+                      _FeatureChip(
+                        label: 'طلب سريع',
+                        color: _accentGlow,
+                      ),
+                      _FeatureChip(
+                        label: 'متابعة الحالة',
+                        color: _accentSoft,
+                      ),
+                      _FeatureChip(
+                        label: 'واجهة أوضح',
+                        color: _accentGlow,
+                      ),
+                    ],
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 2),
-                  child: Row(
+                ],
+              );
+            }
+
+            return Row(
+              children: [
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(width: 28),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 2),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 54,
-                                        height: 54,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                            colors: [
-                                              Colors.white.withOpacity(.22),
-                                              Colors.white.withOpacity(.08),
-                                            ],
-                                          ),
-                                          border: Border.all(
-                                            color:
-                                                Colors.white.withOpacity(.18),
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: _cyanGlow.withOpacity(
-                                                active ? .22 : .10,
-                                              ),
-                                              blurRadius: 18,
-                                            ),
-                                          ],
-                                        ),
-                                        child: Stack(
-                                          alignment: Alignment.center,
-                                          children: [
-                                            Container(
-                                              width: 30,
-                                              height: 30,
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                color: Colors.white
-                                                    .withOpacity(.08),
-                                              ),
-                                            ),
-                                            Icon(
-                                              Icons.route_rounded,
-                                              color:
-                                                  Colors.white.withOpacity(.96),
-                                              size: 26,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      const Expanded(
-                                        child: Text(
-                                          "العميل",
-                                          style: TextStyle(
-                                            color: _white,
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.w900,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 14),
-                            Text(
-                              "الاختيار المثالي لطلب الخدمة بسرعة، متابعة الحالة بسهولة، والوصول لتجربة أكثر سلاسة ووضوحًا.",
-                              style: TextStyle(
-                                color: _white.withOpacity(.88),
-                                fontSize: 13.4,
-                                height: 1.42,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            const Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                _MiniPill(
-                                  icon: Icons.flash_on_rounded,
-                                  text: "طلب سريع",
-                                ),
-                                _MiniPill(
-                                  icon: Icons.my_location_rounded,
-                                  text: "متابعة فورية",
-                                ),
-                                _MiniPill(
-                                  icon: Icons.verified_user_outlined,
-                                  text: "تجربة واضحة",
-                                ),
-                              ],
-                            ),
-                          ],
+                      const Text(
+                        'العميل',
+                        style: TextStyle(
+                          color: _text,
+                          fontSize: 31,
+                          fontWeight: FontWeight.w900,
                         ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'لطلب الخدمة ومتابعة الحالة بسهولة، بتجربة مرنة وسريعة وواضحة من أول استخدام.',
+                        style: TextStyle(
+                          color: _muted.withOpacity(.96),
+                          fontSize: 14,
+                          height: 1.7,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: const [
+                          _FeatureChip(
+                            label: 'طلب سريع',
+                            color: _accentGlow,
+                          ),
+                          _FeatureChip(
+                            label: 'متابعة الحالة',
+                            color: _accentSoft,
+                          ),
+                          _FeatureChip(
+                            label: 'واجهة أوضح',
+                            color: _accentGlow,
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: 16),
+                Column(
+                  children: [
+                    Row(
+                      children: [
+                        _buildSelector(active, highlight: _accentGlow),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _CustomerPremiumIcon(active: active),
+                  ],
+                ),
               ],
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildSecondaryRoleCard() {
-    final bool active = selectedRole == "driver";
-    final bool pressed = _pressedRole == "driver";
+  Widget _buildTechnicianCompactCard() {
+    final bool active = selectedRole == 'driver';
 
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _pressedRole = "driver"),
-      onTapCancel: () => setState(() => _pressedRole = null),
-      onTapUp: (_) => setState(() => _pressedRole = null),
-      child: AnimatedScale(
-        scale: pressed ? .99 : 1,
-        duration: const Duration(milliseconds: 120),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(30),
-          onTap: () => _select("driver"),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 280),
-            curve: Curves.easeOutCubic,
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(30),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: active
-                    ? const [
-                        Color(0xFF1A4B8D),
-                        Color(0xFF12386E),
-                        Color(0xFF0B2446),
-                      ]
-                    : const [
-                        Color(0xFF143764),
-                        Color(0xFF0D294D),
-                        Color(0xFF081D38),
-                      ],
-              ),
-              border: Border.all(
-                color: active
-                    ? Colors.white.withOpacity(.19)
-                    : Colors.white.withOpacity(.10),
-                width: active ? 1.25 : 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: _primaryBlue2.withOpacity(active ? .24 : .14),
-                  blurRadius: active ? 22 : 14,
-                  offset: const Offset(0, 10),
-                ),
-              ],
+    return InkWell(
+      borderRadius: BorderRadius.circular(28),
+      onTap: () => _selectRole('driver'),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+          gradient: LinearGradient(
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+            colors: active
+                ? const [
+                    Color(0xFF18242C),
+                    Color(0xFF131D24),
+                    Color(0xFF0D141A),
+                  ]
+                : const [
+                    Color(0xFF141C23),
+                    Color(0xFF10161C),
+                    Color(0xFF0B1015),
+                  ],
+          ),
+          border: Border.all(
+            color:
+                active ? _lime.withOpacity(.42) : Colors.white.withOpacity(.08),
+            width: active ? 1.4 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: active
+                  ? _lime.withOpacity(.10)
+                  : Colors.black.withOpacity(.14),
+              blurRadius: active ? 24 : 18,
+              offset: const Offset(0, 12),
             ),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(30),
-                      child: CustomPaint(
-                        painter: _DriverCardPainter(active: active),
+          ],
+        ),
+        child: Row(
+          children: [
+            _TechnicianMinimalIcon(active: active),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'الفني',
+                          style: TextStyle(
+                            color: _text,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
                       ),
+                      _buildSelector(active, highlight: _lime),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'لاستقبال الطلبات وإدارة المهام والتنقل بين الحالات بكفاءة داخل التطبيق.',
+                    style: TextStyle(
+                      color: _muted.withOpacity(.95),
+                      fontSize: 13.3,
+                      height: 1.6,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                ),
-                Row(
-                  children: [
-                    _HexIconBox(active: active),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  "الفني",
-                                  style: TextStyle(
-                                    color: _white.withOpacity(.98),
-                                    fontSize: 19,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 220),
-                                child: _SelectionBadge(
-                                  active: active,
-                                  compact: true,
-                                  key: ValueKey(active),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "مناسب لإدارة الطلبات، استقبال المهام، والعمل بكفاءة داخل التطبيق.",
-                            style: TextStyle(
-                              color: _white.withOpacity(.84),
-                              fontSize: 12.8,
-                              height: 1.4,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: const [
+                      _FeatureChip(
+                        label: 'استقبال الطلبات',
+                        color: _lime,
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    _GlassArrowCircle(
-                      size: 42,
-                      iconSize: 22,
-                      glow: active ? .22 : .10,
-                    ),
-                  ],
-                ),
-              ],
+                      _FeatureChip(
+                        label: 'إدارة المهام',
+                        color: _accentSoft,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSelector(bool active, {required Color highlight}) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: active ? highlight.withOpacity(.18) : Colors.transparent,
+        border: Border.all(
+          color: active ? highlight : Colors.white.withOpacity(.28),
+          width: 1.4,
+        ),
+        boxShadow: active
+            ? [
+                BoxShadow(
+                  color: highlight.withOpacity(.18),
+                  blurRadius: 12,
+                ),
+              ]
+            : null,
+      ),
+      child: Icon(
+        active ? Icons.check_rounded : Icons.add_rounded,
+        size: 18,
+        color: active ? Colors.white : _muted,
       ),
     );
   }
@@ -709,49 +776,43 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
   Widget _buildSelectionInfo() {
     final bool hasSelection = selectedRole != null;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 260),
-      curve: Curves.easeOut,
+    return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
         color: Colors.white.withOpacity(.05),
-        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: hasSelection
-              ? _primaryBlue.withOpacity(.26)
-              : Colors.white.withOpacity(.08),
+          color: Colors.white.withOpacity(.08),
         ),
-        boxShadow: hasSelection
-            ? [
-                BoxShadow(
-                  color: _primaryBlue.withOpacity(.10),
-                  blurRadius: 20,
-                ),
-              ]
-            : [],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.12),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            width: 46,
-            height: 46,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withOpacity(.12),
-                  Colors.white.withOpacity(.05),
-                ],
+              color: hasSelection
+                  ? _accentGlow.withOpacity(.10)
+                  : Colors.white.withOpacity(.06),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: hasSelection
+                    ? _accentGlow.withOpacity(.20)
+                    : Colors.white.withOpacity(.08),
               ),
-              border: Border.all(color: Colors.white.withOpacity(.10)),
             ),
             child: Icon(
-              _selectedIcon,
-              color: hasSelection ? _electric : _muted2,
-              size: 22,
+              _selectionIcon,
+              color: hasSelection ? _accentGlow : _hint,
+              size: 24,
             ),
           ),
           const SizedBox(width: 12),
@@ -760,20 +821,20 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _selectedTitle,
-                  style: TextStyle(
-                    color: _white.withOpacity(.96),
-                    fontSize: 13.4,
+                  _selectionTitle,
+                  style: const TextStyle(
+                    color: _text,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _selectedDescription,
+                  _selectionDescription,
                   style: TextStyle(
-                    color: _white.withOpacity(.84),
-                    fontSize: 12.6,
-                    height: 1.4,
+                    color: _muted.withOpacity(.96),
+                    fontSize: 12.8,
+                    height: 1.5,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -785,17 +846,17 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
               decoration: BoxDecoration(
                 color: _success.withOpacity(.12),
-                borderRadius: BorderRadius.circular(100),
+                borderRadius: BorderRadius.circular(999),
                 border: Border.all(
-                  color: _success.withOpacity(.26),
+                  color: _success.withOpacity(.28),
                 ),
               ),
-              child: Row(
+              child: const Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
+                children: [
                   Icon(
                     Icons.check_circle_rounded,
-                    size: 15,
+                    size: 14,
                     color: _success,
                   ),
                   SizedBox(width: 6),
@@ -815,158 +876,91 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
     );
   }
 
-  Widget _buildDividerText() {
-    return Column(
-      children: [
-        Text(
-          'يمكنك تغيير وضع الاستخدام لاحقًا من داخل التطبيق',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: _white.withOpacity(.88),
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
+  Widget _buildHintText() {
+    return Text(
+      'يمكنك تغيير وضع الاستخدام لاحقًا من داخل التطبيق.',
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        color: _hint.withOpacity(.95),
+        fontSize: 12.6,
+        height: 1.6,
+        fontWeight: FontWeight.w500,
+      ),
+    );
+  }
+
+  Widget _buildBottomButton(bool canContinue) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        color: Colors.white.withOpacity(.05),
+        border: Border.all(
+          color: Colors.white.withOpacity(.08),
         ),
-        const SizedBox(height: 10),
-        Container(
-          width: 180,
-          height: 1.4,
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        height: 58,
+        child: DecoratedBox(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(18),
             gradient: LinearGradient(
-              colors: [
-                Colors.transparent,
-                _softLine.withOpacity(.75),
-                Colors.transparent,
-              ],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: canContinue
+                  ? const [_accent, _accentDark]
+                  : [
+                      Colors.white.withOpacity(.12),
+                      Colors.white.withOpacity(.08),
+                    ],
             ),
+            boxShadow: canContinue
+                ? [
+                    BoxShadow(
+                      color: _accentGlow.withOpacity(.18),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
+                    ),
+                  ]
+                : [],
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTermsText() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(
-          Icons.lock_rounded,
-          color: _muted2.withOpacity(.90),
-          size: 16,
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            'بالاستمرار، أنت توافق على الشروط وسياسة الخصوصية، ويمكنك تعديل الدور لاحقًا بدون تعقيد.',
-            style: TextStyle(
-              color: _muted2.withOpacity(.90),
-              fontSize: 11.5,
-              height: 1.45,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBottomButton() {
-    final bool enabled = selectedRole != null;
-    final bool rider = selectedRole == "rider";
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(.05),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Colors.white.withOpacity(.08),
-            ),
-          ),
-          child: SizedBox(
-            height: 60,
-            width: double.infinity,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: enabled
-                      ? rider
-                          ? const [
-                              Color(0xFF143F7C),
-                              Color(0xFF1A4E95),
-                              Color(0xFF10386B),
-                            ]
-                          : const [
-                              Color(0xFF1B4F99),
-                              Color(0xFF275FB1),
-                              Color(0xFF153F78),
-                            ]
-                      : [
-                          Colors.white.withOpacity(.12),
-                          Colors.white.withOpacity(.08),
-                        ],
-                ),
-                boxShadow: enabled
-                    ? [
-                        BoxShadow(
-                          color: _primaryBlue.withOpacity(.30),
-                          blurRadius: 24,
-                          offset: const Offset(0, 14),
-                        ),
-                      ]
-                    : [],
+          child: ElevatedButton(
+            onPressed: canContinue && !_saving ? _continue : null,
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: Colors.transparent,
+              disabledForegroundColor: _muted,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
               ),
-              child: ElevatedButton(
-                onPressed: enabled && !_saving ? _continue : null,
-                style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  disabledBackgroundColor: Colors.transparent,
-                  disabledForegroundColor: _white.withOpacity(.55),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: _saving
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.4,
-                          color: Colors.white,
+            ),
+            child: _saving
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'تأكيد الاختيار',
+                        style: TextStyle(
+                          fontSize: 16.8,
+                          fontWeight: FontWeight.w900,
                         ),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'تأكيد الاختيار',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18.2,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: .2,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Icon(
-                            Icons.arrow_forward_rounded,
-                            color: Colors.white.withOpacity(.95),
-                            size: 22,
-                          ),
-                        ],
                       ),
-              ),
-            ),
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_forward_rounded, size: 20),
+                    ],
+                  ),
           ),
         ),
       ),
@@ -974,490 +968,541 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
   }
 }
 
-const Color _softLine = Color(0xFF86A8DB);
-
-class _MiniPill extends StatelessWidget {
-  final IconData icon;
-  final String text;
-
-  const _MiniPill({
-    required this.icon,
-    required this.text,
+class _FeatureChip extends StatelessWidget {
+  const _FeatureChip({
+    required this.label,
+    required this.color,
   });
+
+  final String label;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(.10),
-        borderRadius: BorderRadius.circular(100),
+        borderRadius: BorderRadius.circular(999),
+        color: color.withOpacity(.10),
         border: Border.all(
-          color: Colors.white.withOpacity(.14),
+          color: color.withOpacity(.20),
         ),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 14,
-            color: Colors.white.withOpacity(.92),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: TextStyle(
-              color: Colors.white.withOpacity(.92),
-              fontSize: 11.3,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 11.4,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
 }
 
-class _GlassArrowCircle extends StatelessWidget {
-  final double size;
-  final double iconSize;
-  final double glow;
+class _CustomerPremiumIcon extends StatefulWidget {
+  const _CustomerPremiumIcon({required this.active});
 
-  const _GlassArrowCircle({
-    this.size = 44,
-    this.iconSize = 24,
-    this.glow = .18,
-  });
+  final bool active;
+
+  @override
+  State<_CustomerPremiumIcon> createState() => _CustomerPremiumIconState();
+}
+
+class _CustomerPremiumIconState extends State<_CustomerPremiumIcon>
+    with TickerProviderStateMixin {
+  late final AnimationController _pulseController;
+  late final AnimationController _rotateController;
+  late final Animation<double> _pulse;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat(reverse: true);
+
+    _rotateController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 10),
+    )..repeat();
+
+    _pulse = Tween<double>(begin: .98, end: 1.045).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    _rotateController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final Color glow = widget.active ? const Color(0xFF8FD3FF) : Colors.white24;
+
+    return AnimatedBuilder(
+      animation: Listenable.merge([_pulseController, _rotateController]),
+      builder: (_, __) {
+        return Transform.scale(
+          scale: widget.active ? _pulse.value : 1,
+          child: SizedBox(
+            width: 126,
+            height: 126,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 126,
+                  height: 126,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(34),
+                    gradient: RadialGradient(
+                      colors: [
+                        glow.withOpacity(widget.active ? .26 : .08),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+                Transform.rotate(
+                  angle: _rotateController.value * math.pi * 2,
+                  child: SizedBox(
+                    width: 118,
+                    height: 118,
+                    child: CustomPaint(
+                      painter: _SquareOrbitPainter(
+                        color: glow.withOpacity(widget.active ? .84 : .22),
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 98,
+                  height: 98,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: widget.active
+                          ? const [
+                              Color(0xFF184565),
+                              Color(0xFF11344D),
+                              Color(0xFF0B2537),
+                            ]
+                          : [
+                              Colors.white.withOpacity(.10),
+                              Colors.white.withOpacity(.05),
+                            ],
+                    ),
+                    border: Border.all(
+                      color: widget.active
+                          ? const Color(0x888FD3FF)
+                          : Colors.white.withOpacity(.10),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: glow.withOpacity(widget.active ? .22 : .08),
+                        blurRadius: 22,
+                      ),
+                    ],
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Positioned(
+                        top: 11,
+                        left: 14,
+                        right: 14,
+                        child: Container(
+                          height: 7,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(99),
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.white.withOpacity(.25),
+                                Colors.white.withOpacity(.03),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          color: Colors.white.withOpacity(.05),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(.05),
+                          ),
+                        ),
+                      ),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.person_outline_rounded,
+                            color: widget.active
+                                ? const Color(0xFF8FD3FF)
+                                : Colors.white.withOpacity(.95),
+                            size: 30,
+                          ),
+                          const SizedBox(height: 3),
+                          Container(
+                            width: 26,
+                            height: 3,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(99),
+                              color: widget.active
+                                  ? const Color(0xFF8FD3FF).withOpacity(.85)
+                                  : Colors.white.withOpacity(.75),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  top: 18,
+                  right: 18,
+                  child:
+                      _tinyDot(glow.withOpacity(widget.active ? .95 : .20), 8),
+                ),
+                Positioned(
+                  bottom: 20,
+                  left: 18,
+                  child:
+                      _tinyDot(glow.withOpacity(widget.active ? .72 : .16), 6),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _tinyDot(Color color, double size) {
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withOpacity(.18),
-            Colors.white.withOpacity(.06),
-          ],
-        ),
-        border: Border.all(
-          color: Colors.white.withOpacity(.14),
-        ),
+        color: color,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF5EA9FF).withOpacity(glow),
-            blurRadius: 14,
+            color: color.withOpacity(.45),
+            blurRadius: 10,
           ),
         ],
-      ),
-      child: Icon(
-        Icons.arrow_forward_rounded,
-        color: Colors.white.withOpacity(.94),
-        size: iconSize,
       ),
     );
   }
 }
 
-class _SelectionBadge extends StatelessWidget {
-  final bool active;
-  final bool compact;
+class _TechnicianMinimalIcon extends StatefulWidget {
+  const _TechnicianMinimalIcon({required this.active});
 
-  const _SelectionBadge({
-    super.key,
-    required this.active,
-    this.compact = false,
-  });
+  final bool active;
+
+  @override
+  State<_TechnicianMinimalIcon> createState() => _TechnicianMinimalIconState();
+}
+
+class _TechnicianMinimalIconState extends State<_TechnicianMinimalIcon>
+    with TickerProviderStateMixin {
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulse;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat(reverse: true);
+
+    _pulse = Tween<double>(begin: .99, end: 1.04).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final Color core = widget.active ? const Color(0xFF25B4E8) : Colors.white70;
+
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (_, __) {
+        return Transform.scale(
+          scale: widget.active ? _pulse.value : 1,
+          child: SizedBox(
+            width: 78,
+            height: 78,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 78,
+                  height: 78,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        core.withOpacity(widget.active ? .18 : .05),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 66,
+                  height: 66,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: widget.active
+                          ? const Color(0x5525B4E8)
+                          : Colors.white.withOpacity(.10),
+                      width: 1.2,
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: widget.active
+                          ? const [
+                              Color(0x3325B4E8),
+                              Color(0x1225B4E8),
+                            ]
+                          : [
+                              Colors.white.withOpacity(.08),
+                              Colors.white.withOpacity(.03),
+                            ],
+                    ),
+                    border: Border.all(
+                      color: widget.active
+                          ? const Color(0x6625B4E8)
+                          : Colors.white.withOpacity(.10),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: core.withOpacity(.16),
+                        blurRadius: 14,
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.handyman_rounded,
+                    color: widget.active ? core : Colors.white.withOpacity(.94),
+                    size: 23,
+                  ),
+                ),
+                Positioned(
+                  top: 9,
+                  child: _dot(core.withOpacity(widget.active ? .90 : .20)),
+                ),
+                Positioned(
+                  left: 9,
+                  child: _dot(core.withOpacity(widget.active ? .70 : .16)),
+                ),
+                Positioned(
+                  right: 9,
+                  child: _dot(core.withOpacity(widget.active ? .70 : .16)),
+                ),
+                Positioned(
+                  bottom: 9,
+                  child: _dot(core.withOpacity(widget.active ? .55 : .14)),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _dot(Color color) {
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: compact ? 10 : 12,
-        vertical: compact ? 7 : 8,
-      ),
+      width: 6.5,
+      height: 6.5,
       decoration: BoxDecoration(
-        color: active
-            ? const Color(0xFF7BD0A7).withOpacity(.12)
-            : Colors.white.withOpacity(.08),
-        borderRadius: BorderRadius.circular(100),
-        border: Border.all(
-          color: active
-              ? const Color(0xFF7BD0A7).withOpacity(.28)
-              : Colors.white.withOpacity(.12),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            active
-                ? Icons.check_circle_rounded
-                : Icons.radio_button_unchecked_rounded,
-            size: compact ? 16 : 17,
-            color: active
-                ? const Color(0xFF7BD0A7)
-                : Colors.white.withOpacity(.72),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            active ? 'محدد' : 'اختر',
-            style: TextStyle(
-              color: active
-                  ? const Color(0xFF95E1BC)
-                  : Colors.white.withOpacity(.84),
-              fontSize: compact ? 11.2 : 11.6,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
+        shape: BoxShape.circle,
+        color: color,
       ),
     );
   }
 }
 
-class _HexIconBox extends StatelessWidget {
-  final bool active;
+class _SquareOrbitPainter extends CustomPainter {
+  const _SquareOrbitPainter({required this.color});
 
-  const _HexIconBox({
-    required this.active,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipPath(
-      clipper: _HexagonClipper(),
-      child: Container(
-        width: 58,
-        height: 58,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: active
-                ? [
-                    Colors.white.withOpacity(.22),
-                    Colors.white.withOpacity(.08),
-                  ]
-                : [
-                    Colors.white.withOpacity(.14),
-                    Colors.white.withOpacity(.05),
-                  ],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF4D9BFF).withOpacity(active ? .18 : .08),
-              blurRadius: 14,
-            ),
-          ],
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _InnerHexPainter(),
-              ),
-            ),
-            Icon(
-              Icons.build_rounded,
-              color: Colors.white.withOpacity(.95),
-              size: 26,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _RiderCardPainter extends CustomPainter {
-  final bool active;
-
-  const _RiderCardPainter({required this.active});
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final routePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = active ? 2.2 : 1.8
-      ..color = Colors.white.withOpacity(active ? .20 : .12);
-
-    final path = Path()
-      ..moveTo(size.width * .62, size.height * .24)
-      ..quadraticBezierTo(
-        size.width * .78,
-        size.height * .18,
-        size.width * .85,
-        size.height * .34,
-      )
-      ..quadraticBezierTo(
-        size.width * .92,
-        size.height * .52,
-        size.width * .76,
-        size.height * .67,
-      )
-      ..quadraticBezierTo(
-        size.width * .64,
-        size.height * .78,
-        size.width * .88,
-        size.height * .88,
-      );
-
-    canvas.drawPath(path, routePaint);
-
-    final dotPaint = Paint()
-      ..color = const Color(0xFF91C8FF).withOpacity(active ? .34 : .20);
-
-    canvas.drawCircle(
-      Offset(size.width * .62, size.height * .24),
-      4.5,
-      dotPaint,
-    );
-    canvas.drawCircle(
-      Offset(size.width * .88, size.height * .88),
-      5.3,
-      dotPaint,
+    final RRect rect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(10, 10, size.width - 20, size.height - 20),
+      const Radius.circular(26),
     );
 
-    final ringPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1
-      ..color = Colors.white.withOpacity(.08);
-
-    canvas.drawCircle(
-      Offset(size.width * .82, size.height * .26),
-      38,
-      ringPaint,
-    );
-    canvas.drawCircle(
-      Offset(size.width * .86, size.height * .72),
-      24,
-      ringPaint,
-    );
-
-    final shimmer = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topRight,
-        end: Alignment.bottomLeft,
-        colors: [
-          Colors.white.withOpacity(.09),
-          Colors.transparent,
-        ],
-      ).createShader(
-        Rect.fromLTWH(size.width * .48, 0, size.width * .52, size.height),
-      );
-
-    canvas.drawRect(
-      Rect.fromLTWH(size.width * .52, 0, size.width * .48, size.height),
-      shimmer,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _RiderCardPainter oldDelegate) {
-    return oldDelegate.active != active;
-  }
-}
-
-class _DriverCardPainter extends CustomPainter {
-  final bool active;
-
-  const _DriverCardPainter({required this.active});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final line = Paint()
-      ..color = Colors.white.withOpacity(active ? .12 : .08)
-      ..strokeWidth = 1.1
-      ..style = PaintingStyle.stroke;
-
-    final fill = Paint()
-      ..color = const Color(0xFF8DBBFF).withOpacity(active ? .08 : .05)
-      ..style = PaintingStyle.fill;
-
-    final hex1 = _hexPath(
-      center: Offset(size.width * .80, size.height * .34),
-      radius: 24,
-    );
-    final hex2 = _hexPath(
-      center: Offset(size.width * .92, size.height * .68),
-      radius: 18,
-    );
-
-    canvas.drawPath(hex1, fill);
-    canvas.drawPath(hex1, line);
-    canvas.drawPath(hex2, fill);
-    canvas.drawPath(hex2, line);
-
-    final connector = Paint()
-      ..color = Colors.white.withOpacity(.09)
-      ..strokeWidth = 1.2;
-
-    canvas.drawLine(
-      Offset(size.width * .83, size.height * .48),
-      Offset(size.width * .89, size.height * .58),
-      connector,
-    );
-
-    final diag = Paint()
-      ..color = Colors.white.withOpacity(.05)
-      ..strokeWidth = 1;
-
-    for (double x = size.width * .56; x < size.width; x += 18) {
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x - 28, size.height),
-        diag,
-      );
-    }
-  }
-
-  Path _hexPath({
-    required Offset center,
-    required double radius,
-  }) {
-    final path = Path();
-    for (int i = 0; i < 6; i++) {
-      final angle = (math.pi / 3 * i) - math.pi / 6;
-      final point = Offset(
-        center.dx + radius * math.cos(angle),
-        center.dy + radius * math.sin(angle),
-      );
-      if (i == 0) {
-        path.moveTo(point.dx, point.dy);
-      } else {
-        path.lineTo(point.dx, point.dy);
-      }
-    }
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldRepaint(covariant _DriverCardPainter oldDelegate) {
-    return oldDelegate.active != active;
-  }
-}
-
-class _InnerHexPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final p = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1
-      ..color = Colors.white.withOpacity(.08);
-
-    final rect = Rect.fromLTWH(8, 8, size.width - 16, size.height - 16);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(rect, const Radius.circular(12)),
-      p,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _HexagonClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    final w = size.width;
-    final h = size.height;
-
-    path.moveTo(w * .25, 0);
-    path.lineTo(w * .75, 0);
-    path.lineTo(w, h * .5);
-    path.lineTo(w * .75, h);
-    path.lineTo(w * .25, h);
-    path.lineTo(0, h * .5);
-    path.close();
-
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
-}
-
-class _BackgroundPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final arcPaint = Paint()
+    final Paint paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2
-      ..color = const Color(0xFF5D7FB3).withOpacity(.18);
+      ..color = color;
 
-    final center = Offset(size.width / 2, size.height * .47);
+    final Path path = Path()..addRRect(rect);
+    final metric = path.computeMetrics().first;
+    final double length = metric.length;
 
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: size.width * .56),
-      math.pi,
-      math.pi,
-      false,
-      arcPaint,
+    void drawSeg(double start, double sweep) {
+      final Path extract =
+          metric.extractPath(start * length, (start + sweep) * length);
+      canvas.drawPath(extract, paint);
+    }
+
+    drawSeg(0.04, 0.12);
+    drawSeg(0.29, 0.08);
+    drawSeg(0.56, 0.10);
+    drawSeg(0.82, 0.07);
+
+    final Paint dotPaint = Paint()..color = color;
+    canvas.drawCircle(
+        Offset(size.width * .82, size.height * .32), 2.0, dotPaint);
+    canvas.drawCircle(
+      Offset(size.width * .22, size.height * .74),
+      1.7,
+      dotPaint..color = color.withOpacity(.65),
     );
-
-    final arcPaint2 = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = .8
-      ..color = Colors.white.withOpacity(.05);
-
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: size.width * .64),
-      math.pi,
-      math.pi,
-      false,
-      arcPaint2,
-    );
-
-    final gridPaint = Paint()
-      ..color = Colors.white.withOpacity(.020)
-      ..strokeWidth = 1;
-
-    for (double y = 0; y < size.height; y += 44) {
-      canvas.drawLine(
-        Offset(0, y),
-        Offset(size.width, y),
-        gridPaint,
-      );
-    }
-
-    for (double x = 0; x < size.width; x += 42) {
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x, size.height),
-        gridPaint..color = Colors.white.withOpacity(.012),
-      );
-    }
-
-    final dotPaint = Paint()..color = const Color(0xFFAFC3E2).withOpacity(.09);
-
-    for (int i = 0; i < 16; i++) {
-      final dx = (size.width / 15) * i + (i.isEven ? 8 : -4);
-      final dy = 90 + (i % 5) * 88.0;
-      canvas.drawCircle(Offset(dx, dy), 1.45, dotPaint);
-    }
-
-    final diagonalPaint = Paint()
-      ..color = Colors.white.withOpacity(.015)
-      ..strokeWidth = 1;
-
-    for (double x = -size.width; x < size.width * 1.5; x += 48) {
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x + 130, size.height),
-        diagonalPaint,
-      );
-    }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _SquareOrbitPainter oldDelegate) {
+    return oldDelegate.color != color;
+  }
+}
+
+class _RoleBackgroundPainter extends CustomPainter {
+  const _RoleBackgroundPainter({required this.progress});
+
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint softLine = Paint()
+      ..color = Colors.white.withOpacity(.023)
+      ..strokeWidth = 18
+      ..style = PaintingStyle.stroke;
+
+    final Paint brightLine = Paint()
+      ..color = const Color(0xFF8FD3FF).withOpacity(.055)
+      ..strokeWidth = 16
+      ..style = PaintingStyle.stroke;
+
+    final double shift = progress * 120;
+
+    for (double x = -size.width; x < size.width * 2; x += 92) {
+      canvas.drawLine(
+        Offset(x - shift, -50),
+        Offset(x + size.height * .52 - shift, size.height + 60),
+        softLine,
+      );
+    }
+
+    for (double x = -size.width + 30; x < size.width * 2; x += 180) {
+      canvas.drawLine(
+        Offset(x - shift * .65, -60),
+        Offset(x + size.height * .52 - shift * .65, size.height + 80),
+        brightLine,
+      );
+    }
+
+    final Paint wave = Paint()
+      ..color = const Color(0xFF8FD3FF).withOpacity(.10)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.1;
+
+    final Path topWave = Path()
+      ..moveTo(0, size.height * .14)
+      ..quadraticBezierTo(
+        size.width * .24,
+        size.height * .06,
+        size.width * .52,
+        size.height * .14,
+      )
+      ..quadraticBezierTo(
+        size.width * .78,
+        size.height * .22,
+        size.width,
+        size.height * .12,
+      );
+
+    final Path bottomWave = Path()
+      ..moveTo(0, size.height * .84)
+      ..quadraticBezierTo(
+        size.width * .18,
+        size.height * .80,
+        size.width * .38,
+        size.height * .88,
+      )
+      ..quadraticBezierTo(
+        size.width * .72,
+        size.height * .97,
+        size.width,
+        size.height * .90,
+      );
+
+    canvas.drawPath(topWave, wave);
+    canvas.drawPath(bottomWave, wave);
+
+    final Paint dotPaint = Paint()
+      ..color = const Color(0xFF8FD3FF).withOpacity(.08);
+
+    for (double x = 18; x < size.width; x += 58) {
+      canvas.drawCircle(Offset(x, size.height * .22), 1.3, dotPaint);
+    }
+
+    for (double x = 10; x < size.width; x += 62) {
+      canvas.drawCircle(Offset(x, size.height * .72), 1.2, dotPaint);
+    }
+
+    final Paint ringPaint = Paint()
+      ..color = const Color(0xFF8FD3FF).withOpacity(.06)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+
+    canvas.drawCircle(
+      Offset(size.width * .84, size.height * .18),
+      34,
+      ringPaint,
+    );
+    canvas.drawCircle(
+      Offset(size.width * .16, size.height * .60),
+      26,
+      ringPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _RoleBackgroundPainter oldDelegate) {
+    return oldDelegate.progress != progress;
+  }
 }

@@ -1,16 +1,14 @@
-// PATH: lib/screens/home/home_widgets.dart
-// ignore_for_file: invalid_use_of_protected_member
+// lib/screens/home/home_widgets.dart
+// ignore_for_file: invalid_use_of_protected_member, unused_element
 
 part of '../home_screen.dart';
 
 extension _HomeWidgets on _HomeScreenState {
-  // ================== Helpers ==================
   void _tap(VoidCallback fn) {
     HapticFeedback.selectionClick();
     fn();
   }
 
-  // ignore: unused_element
   BoxShadow _softShadow({
     double blur = 22,
     double dy = 12,
@@ -23,46 +21,32 @@ extension _HomeWidgets on _HomeScreenState {
     );
   }
 
-// ================== LOGIN / APP PALETTE ==================
-// ignore: unused_element
   Color get _bgStart => const Color(0xFF081A36);
-// ignore: unused_element
   Color get _bgEnd => const Color(0xFF040D1D);
 
   Color get _panel => const Color(0xFF143F7C);
-// ignore: unused_element
   Color get _panelTop => const Color(0xFF1B4F9C);
 
   Color get _accent => const Color(0xFF1B4F9C);
   Color get _accentDark => const Color(0xFF10386B);
   Color get _accentSoft => const Color(0xFFE7EEF9);
-
   Color get _text => const Color(0xFFFFFFFF);
   Color get _muted => const Color(0xFFC9D6EA);
-// ignore: unused_element
   Color get _hint => const Color(0xFF93A9C9);
-
-// ignore: unused_element
   Color get _line => const Color(0xFF29496F);
-// ignore: unused_element
   Color get _lime => const Color(0xFFE8F09E);
-
   Color get _ink => const Color(0xFFF2F6FB);
   Color get _inkSoft => const Color(0xFF93A9C9);
 
-// ignore: deprecated_member_use
   Color get _lineColor =>
       _isDarkMode ? Colors.white.withOpacity(.12) : const Color(0xFF29496F);
 
-  // ==================   ASSET IMAGES  ==================
   static const String _imgRoadService = 'assets/images/4.png';
   static const String _imgMaintenance = 'assets/images/44.png';
   // ignore: unused_field
   static const String _imgDiagnosis = 'assets/icons/diagnosis.png';
   static const String _imgStore = 'assets/images/444.png';
 
-  // ================== GRADIENTS ==================
-// ================== GRADIENTS ==================
   LinearGradient get _aquaCreamGradient => const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -78,11 +62,11 @@ extension _HomeWidgets on _HomeScreenState {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          Color(0xFF1B4F99),
+          Color(0xFF2F7CE5),
           Color(0xFF245AA6),
           Color(0xFF153F78),
         ],
-        stops: [0.0, 0.50, 1.0],
+        stops: [0.0, 0.48, 1.0],
       );
 
   LinearGradient get _premiumAppBarGradient => const LinearGradient(
@@ -114,23 +98,23 @@ extension _HomeWidgets on _HomeScreenState {
         ],
       );
 
-// ignore: unused_element
   LinearGradient get _quickCardGradientDark => const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Color(0xFF1B4F9C),
+          Color(0xFF1F5EA9),
+          Color(0xFF154988),
           Color(0xFF10386B),
         ],
       );
 
-// ignore: unused_element
   LinearGradient get _quickCardGradientLight => const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Color(0xFF17345F),
-          Color(0xFF0D2140),
+          Color(0xFF4D86BF),
+          Color(0xFF2F67A1),
+          Color(0xFF1C5388),
         ],
       );
 
@@ -147,8 +131,6 @@ extension _HomeWidgets on _HomeScreenState {
         ),
       ];
 
-  // ================== Shared asset image widget ==================
-  // ignore: unused_element
   Widget _assetIcon(
     String path, {
     double size = 26,
@@ -156,6 +138,7 @@ extension _HomeWidgets on _HomeScreenState {
     BoxFit fit = BoxFit.contain,
     bool withBackground = false,
     bool active = false,
+    Color? backgroundColor,
   }) {
     return Container(
       width: withBackground ? size + 16 : size,
@@ -166,9 +149,10 @@ extension _HomeWidgets on _HomeScreenState {
               gradient: active ? _ctaAquaGradient : null,
               color: active
                   ? null
-                  : (_isDarkMode
-                      ? Colors.white.withOpacity(.08)
-                      : Colors.white.withOpacity(.95)),
+                  : (backgroundColor ??
+                      (_isDarkMode
+                          ? Colors.white.withOpacity(.08)
+                          : Colors.white.withOpacity(.95))),
               border: Border.all(
                 color: active
                     ? _accent.withOpacity(.30)
@@ -197,7 +181,6 @@ extension _HomeWidgets on _HomeScreenState {
     );
   }
 
-  // ================== PRO Buttons ==================
   Widget _gradientPillButton({
     required String text,
     required VoidCallback onTap,
@@ -287,7 +270,6 @@ extension _HomeWidgets on _HomeScreenState {
     );
   }
 
-  // ================== Image (asset or network) ==================
   Widget smartImage(
     String pathOrUrl, {
     double width = 60,
@@ -297,7 +279,7 @@ extension _HomeWidgets on _HomeScreenState {
     final v = pathOrUrl.trim();
     if (v.isEmpty) return _imgFallback(width, height, radius);
 
-    final isUrl = v.startsWith("http://") || v.startsWith("https://");
+    final isUrl = v.startsWith('http://') || v.startsWith('https://');
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
@@ -342,17 +324,16 @@ extension _HomeWidgets on _HomeScreenState {
     );
   }
 
-  // ================== Calls ==================
   Future<void> _callEmergency() async {
-    final uri = Uri.parse("tel:112");
+    final uri = Uri.parse('tel:112');
     try {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri);
       } else {
-        _snack(trKey("callFail"));
+        _snack(trKey('callFail'));
       }
     } catch (_) {
-      _snack(trKey("callFail"));
+      _snack(trKey('callFail'));
     }
   }
 
@@ -360,19 +341,19 @@ extension _HomeWidgets on _HomeScreenState {
     Navigator.pop(context);
     try {
       final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getString("userId");
+      final userId = prefs.getString('userId');
       if (!mounted) return;
 
       if (userId == null || userId.isEmpty) {
-        _snack(trKey("loginFirst"));
+        _snack(trKey('loginFirst'));
         return;
       }
 
       final chatData = await SupportChatService.getOrCreateChat();
-      final chatId = chatData["_id"]?.toString();
+      final chatId = chatData['_id']?.toString();
 
       if (chatId == null || chatId.isEmpty) {
-        _snack(trKey("chatError"));
+        _snack(trKey('chatError'));
         return;
       }
 
@@ -384,11 +365,10 @@ extension _HomeWidgets on _HomeScreenState {
         ),
       );
     } catch (_) {
-      _snack(trKey("chatError"));
+      _snack(trKey('chatError'));
     }
   }
 
-  // ================== Call sheet ==================
   void _showCallSheet() {
     _tap(() {});
     showModalBottomSheet(
@@ -432,7 +412,7 @@ extension _HomeWidgets on _HomeScreenState {
                           children: [
                             Expanded(
                               child: Text(
-                                _isArabic ? "تواصل سريع" : "Quick Contact",
+                                _isArabic ? 'تواصل سريع' : 'Quick Contact',
                                 style: h2,
                               ),
                             ),
@@ -446,8 +426,8 @@ extension _HomeWidgets on _HomeScreenState {
                         const SizedBox(height: 10),
                         _sheetCard(
                           icon: Icons.support_agent_rounded,
-                          title: trKey("supportChat"),
-                          subtitle: trKey("supportSub"),
+                          title: trKey('supportChat'),
+                          subtitle: trKey('supportSub'),
                           bg: _isDarkMode
                               ? Colors.white.withOpacity(.06)
                               : const Color(0xFFF2F8FD),
@@ -457,8 +437,8 @@ extension _HomeWidgets on _HomeScreenState {
                         const SizedBox(height: 12),
                         _sheetCard(
                           icon: Icons.emergency_rounded,
-                          title: trKey("emergency"),
-                          subtitle: trKey("emergencySub"),
+                          title: trKey('emergency'),
+                          subtitle: trKey('emergencySub'),
                           bg: _isDarkMode
                               ? Colors.white.withOpacity(.06)
                               : const Color(0xFFF8FBFF),
@@ -536,7 +516,272 @@ extension _HomeWidgets on _HomeScreenState {
     );
   }
 
-  // ================== My location card ==================
+  Widget _heroMiniStat({
+    required IconData icon,
+    required String title,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(.08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withOpacity(.12)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.white.withOpacity(.12),
+            ),
+            child: Icon(icon, color: Colors.white, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              title,
+              style: GoogleFonts.cairo(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionGrid() {
+    return Column(
+      children: [
+        /// 🔥 الكارت الكبير (خدمات الطريق)
+        InkWell(
+          borderRadius: BorderRadius.circular(28),
+          onTap: () => _tap(() => _goto(const RoadServicesScreen())),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF4D86BF),
+                  Color(0xFF2F67A1),
+                  Color(0xFF1C5388),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(.15),
+                  blurRadius: 20,
+                  offset: Offset(0, 10),
+                )
+              ],
+            ),
+            child: Row(
+              children: [
+                /// زرار السهم
+                Container(
+                  width: 55,
+                  height: 55,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(.15),
+                  ),
+                  child: Icon(
+                    _isArabic
+                        ? Icons.arrow_back_rounded
+                        : Icons.arrow_forward_rounded,
+                    color: Colors.white,
+                  ),
+                ),
+
+                const SizedBox(width: 14),
+
+                /// النصوص
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: _isArabic
+                        ? CrossAxisAlignment.end
+                        : CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          "EMERGENCY",
+                          style: GoogleFonts.cairo(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        _isArabic ? "خدمات الطريق" : "Road Services",
+                        style: GoogleFonts.cairo(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _isArabic
+                            ? "المساعدة على الطريق"
+                            : "Roadside Assistance",
+                        style: GoogleFonts.cairo(
+                          color: Colors.white70,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                /// الصورة
+                Container(
+                  width: 100,
+                  height: 100,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(.4),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Image.asset(
+                    _imgRoadService,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        /// 🔥 الكارتين تحت
+        Row(
+          children: [
+            /// المتجر
+            Expanded(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(24),
+                onTap: () => _tap(() => _goto(const HomePage())),
+                child: Container(
+                  height: 190,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFF4D86BF),
+                        Color(0xFF2F67A1),
+                        Color(0xFF1C5388),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.all(12),
+                        height: 120,
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(.4),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Image.asset(
+                          _imgStore,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        _isArabic ? "المتجر" : "Store",
+                        style: GoogleFonts.cairo(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 14),
+
+            /// الصيانة
+            Expanded(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(24),
+                onTap: () =>
+                    _tap(() => _goto(const MaintenanceServicesScreen())),
+                child: Container(
+                  height: 190,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFF4D86BF),
+                        Color(0xFF2F67A1),
+                        Color(0xFF1C5388),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.all(12),
+                        height: 120,
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(.4),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Image.asset(
+                          _imgMaintenance,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        _isArabic ? "الصيانة" : "Maintenance",
+                        style: GoogleFonts.cairo(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _myLocationCard() {
     if (_myPos == null) return const SizedBox.shrink();
 
@@ -568,7 +813,7 @@ extension _HomeWidgets on _HomeScreenState {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              "${trKey("yourLocation")}: $lat , $lng",
+              '${trKey('yourLocation')}: $lat , $lng',
               style: bodyStrong.copyWith(fontSize: 13),
             ),
           ),
@@ -576,14 +821,13 @@ extension _HomeWidgets on _HomeScreenState {
             onPressed: _openGoogleMapsNearby,
             icon: Icon(Icons.map_outlined, color: textSub),
             splashRadius: 20,
-            tooltip: _isArabic ? "فتح الخريطة" : "Open map",
+            tooltip: _isArabic ? 'فتح الخريطة' : 'Open map',
           ),
         ],
       ),
     );
   }
 
-  // ================== Radius selector ==================
   Widget _radiusSelector() {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -600,7 +844,7 @@ extension _HomeWidgets on _HomeScreenState {
           Icon(Icons.radar_rounded, color: _accent.withOpacity(.95)),
           const SizedBox(width: 10),
           Text(
-            "${trKey("radius")}: ",
+            '${trKey('radius')}: ',
             style: bodyStrong.copyWith(fontSize: 13),
           ),
           const SizedBox(width: 10),
@@ -615,7 +859,7 @@ extension _HomeWidgets on _HomeScreenState {
                     child: ChoiceChip(
                       selected: selected,
                       label: Text(
-                        _isArabic ? "$km كم" : "$km km",
+                        _isArabic ? '$km كم' : '$km km',
                         style: GoogleFonts.cairo(
                           fontWeight: FontWeight.w900,
                           color: selected ? Colors.black : textMain,
@@ -638,11 +882,10 @@ extension _HomeWidgets on _HomeScreenState {
     );
   }
 
-  // ================== APP BAR ==================
   AppBar _buildAppBar() {
     return AppBar(
       elevation: 0,
-      toolbarHeight: 78,
+      toolbarHeight: 82,
       backgroundColor: Colors.transparent,
       automaticallyImplyLeading: false,
       flexibleSpace: Container(
@@ -660,23 +903,24 @@ extension _HomeWidgets on _HomeScreenState {
           ),
         ),
       ),
-      leadingWidth: 118,
+      leadingWidth: 100,
       leading: Builder(
         builder: (ctx) => Padding(
-          padding: const EdgeInsets.only(left: 10),
+          padding: const EdgeInsetsDirectional.only(start: 8),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               _appBarIcon(
                 icon: Icons.menu_rounded,
-                tooltip: _isArabic ? "القائمة" : "Menu",
+                tooltip: _isArabic ? 'القائمة' : 'Menu',
                 onTap: () => Scaffold.of(ctx).openEndDrawer(),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               _appBarIcon(
                 icon: Icons.notifications_none_rounded,
-                tooltip: _isArabic ? "الإشعارات" : "Notifications",
+                tooltip: _isArabic ? 'الإشعارات' : 'Notifications',
                 onTap: () => _snack(
-                  _isArabic ? "لا توجد إشعارات الآن" : "No notifications yet",
+                  _isArabic ? 'لا توجد إشعارات الآن' : 'No notifications yet',
                 ),
               ),
             ],
@@ -684,60 +928,78 @@ extension _HomeWidgets on _HomeScreenState {
         ),
       ),
       centerTitle: true,
-      title: Column(
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.18),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.white.withOpacity(.26)),
+      titleSpacing: 0,
+      title: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(.18),
+                    borderRadius: BorderRadius.circular(9),
+                    border: Border.all(color: Colors.white.withOpacity(.26)),
+                  ),
+                  child: const Icon(
+                    Icons.car_repair,
+                    color: Colors.white,
+                    size: 16,
+                  ),
                 ),
-                child:
-                    const Icon(Icons.car_repair, color: Colors.white, size: 18),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                "Doctor Car",
-                style: GoogleFonts.cairo(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    'Doctor Car',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.cairo(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 2),
-          Text(
-            _isArabic ? "خدمات سيارات ذكية" : "Smart Car Services",
-            style: GoogleFonts.cairo(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: Colors.white.withOpacity(.78),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 2),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 190),
+              child: Text(
+                _isArabic ? 'خدمات السيارات الذكية' : 'Smart Car Services',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.cairo(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white.withOpacity(.78),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       actions: [
         _appBarIcon(
           icon: Icons.search_rounded,
-          tooltip: _isArabic ? "بحث" : "Search",
+          tooltip: _isArabic ? 'بحث' : 'Search',
           onTap: () =>
-              _snack(_isArabic ? "ميزة البحث قريبًا" : "Search coming soon"),
+              _snack(_isArabic ? 'ميزة البحث قريبًا' : 'Search coming soon'),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 4),
         _appBarIcon(icon: Icons.language_rounded, onTap: _toggleLanguage),
-        const SizedBox(width: 6),
+        const SizedBox(width: 4),
         _appBarIcon(
           icon:
               _isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
           onTap: _toggleTheme,
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
       ],
     );
   }
@@ -749,23 +1011,23 @@ extension _HomeWidgets on _HomeScreenState {
   }) {
     return Semantics(
       button: true,
-      label: tooltip ?? "",
+      label: tooltip ?? '',
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _tap(onTap),
-          borderRadius: BorderRadius.circular(r16),
+          borderRadius: BorderRadius.circular(14),
           child: Container(
             width: 42,
             height: 42,
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(.12),
-              borderRadius: BorderRadius.circular(r16),
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(color: Colors.white.withOpacity(.16)),
             ),
             child: Tooltip(
-              message: tooltip ?? "",
-              child: Icon(icon, color: Colors.white, size: 22),
+              message: tooltip ?? '',
+              child: Icon(icon, color: Colors.white, size: 21),
             ),
           ),
         ),
@@ -773,7 +1035,6 @@ extension _HomeWidgets on _HomeScreenState {
     );
   }
 
-  // ================== BANNER ==================
   Widget _bannerSlider() {
     if (banners.isEmpty) return const SizedBox.shrink();
 
@@ -821,7 +1082,7 @@ extension _HomeWidgets on _HomeScreenState {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Colors.black.withOpacity(.20),
+                        Colors.black.withOpacity(.22),
                         Colors.transparent,
                         _accent.withOpacity(.10),
                       ],
@@ -836,7 +1097,7 @@ extension _HomeWidgets on _HomeScreenState {
                   bottom: 14,
                   child: ElevatedButton.icon(
                     onPressed: () => _snack(
-                      _isArabic ? "أقرب العروض قريبًا" : "Top offers soon",
+                      _isArabic ? 'أقرب العروض قريبًا' : 'Top offers soon',
                     ),
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
@@ -849,7 +1110,7 @@ extension _HomeWidgets on _HomeScreenState {
                     ),
                     icon: const Icon(Icons.local_offer_rounded, size: 18),
                     label: Text(
-                      _isArabic ? "شوف العروض" : "View offers",
+                      _isArabic ? 'شوف العروض' : 'View offers',
                       style: GoogleFonts.cairo(fontWeight: FontWeight.w900),
                     ),
                   ),
@@ -881,13 +1142,12 @@ extension _HomeWidgets on _HomeScreenState {
     );
   }
 
-  // ================== QUICK SERVICES ==================
   Widget _quickServicesRow() {
     return Column(
       children: [
         _serviceWideTopCard(
-          title: _isArabic ? "خدمات الطريق" : "Road Services",
-          subtitle: _isArabic ? "المساعدة على الطريق" : "Roadside Assistance",
+          title: _isArabic ? 'خدمات الطريق' : 'Road Services',
+          subtitle: _isArabic ? 'المساعدة على الطريق' : 'Roadside Assistance',
           imagePath: _imgRoadService,
           onTap: () => _goto(const RoadServicesScreen()),
           showEmergencyBadge: true,
@@ -897,7 +1157,7 @@ extension _HomeWidgets on _HomeScreenState {
           children: [
             Expanded(
               child: _serviceBottomCard(
-                title: _isArabic ? "المتجر" : "Store",
+                title: _isArabic ? 'المتجر' : 'Store',
                 imagePath: _imgStore,
                 onTap: () => _goto(const HomePage()),
               ),
@@ -905,7 +1165,7 @@ extension _HomeWidgets on _HomeScreenState {
             const SizedBox(width: 14),
             Expanded(
               child: _serviceBottomCard(
-                title: _isArabic ? "الصيانة" : "Maintenance",
+                title: _isArabic ? 'الصيانة' : 'Maintenance',
                 imagePath: _imgMaintenance,
                 onTap: () => _goto(const MaintenanceServicesScreen()),
               ),
@@ -931,21 +1191,8 @@ extension _HomeWidgets on _HomeScreenState {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: _isDarkMode
-                ? const [
-                    Color(0xFF477CB1),
-                    Color(0xFF2F67A1),
-                    Color(0xFF1F5D99),
-                  ]
-                : const [
-                    Color(0xFF4D86BF),
-                    Color(0xFF2F67A1),
-                    Color(0xFF1C5388),
-                  ],
-          ),
+          gradient:
+              _isDarkMode ? _quickCardGradientDark : _quickCardGradientLight,
           border: Border.all(
             color: const Color(0xFF7CC4F5).withOpacity(.60),
             width: 1.5,
@@ -986,33 +1233,22 @@ extension _HomeWidgets on _HomeScreenState {
             Row(
               children: [
                 Container(
-                  width: 108,
-                  height: 108,
+                  width: 58,
+                  height: 58,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF325D8F).withOpacity(.55),
-                    borderRadius: BorderRadius.circular(22),
-                    border: Border.all(
-                      color: Colors.black.withOpacity(.22),
-                      width: 1.0,
-                    ),
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(.08),
+                    border: Border.all(color: Colors.white.withOpacity(.09)),
                   ),
-                  padding: const EdgeInsets.all(8),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(18),
-                    child: Image.asset(
-                      imagePath,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => Center(
-                        child: Icon(
-                          Icons.image_not_supported_outlined,
-                          size: 36,
-                          color: _muted,
-                        ),
-                      ),
-                    ),
+                  child: Icon(
+                    _isArabic
+                        ? Icons.arrow_back_rounded
+                        : Icons.arrow_forward_rounded,
+                    color: Colors.white,
+                    size: 28,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6),
@@ -1025,8 +1261,8 @@ extension _HomeWidgets on _HomeScreenState {
                         if (showEmergencyBadge)
                           Align(
                             alignment: _isArabic
-                                ? Alignment.centerLeft
-                                : Alignment.centerRight,
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 14,
@@ -1037,7 +1273,7 @@ extension _HomeWidgets on _HomeScreenState {
                                 borderRadius: BorderRadius.circular(999),
                               ),
                               child: Text(
-                                "EMERGENCY",
+                                'EMERGENCY',
                                 style: GoogleFonts.cairo(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w900,
@@ -1073,23 +1309,32 @@ extension _HomeWidgets on _HomeScreenState {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 16),
                 Container(
-                  width: 54,
-                  height: 54,
+                  width: 108,
+                  height: 108,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(.10),
+                    color: const Color(0xFF325D8F).withOpacity(.55),
+                    borderRadius: BorderRadius.circular(22),
                     border: Border.all(
-                      color: Colors.white.withOpacity(.08),
+                      color: Colors.black.withOpacity(.18),
+                      width: 1.0,
                     ),
                   ),
-                  child: Icon(
-                    _isArabic
-                        ? Icons.arrow_back_rounded
-                        : Icons.arrow_forward_rounded,
-                    color: Colors.white,
-                    size: 28,
+                  padding: const EdgeInsets.all(8),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: Image.asset(
+                      imagePath,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Center(
+                        child: Icon(
+                          Icons.image_not_supported_outlined,
+                          size: 36,
+                          color: _muted,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -1111,22 +1356,8 @@ extension _HomeWidgets on _HomeScreenState {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(28),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: _isDarkMode
-                ? const [
-                    Color(0xFF4A82BA),
-                    Color(0xFF2F67A1),
-                    Color(0xFF1F5D99),
-                  ]
-                : const [
-                    Color(0xFF4B80B7),
-                    Color(0xFF2F67A1),
-                    Color(0xFF1F5D99),
-                  ],
-            stops: const [0.0, 0.58, 1.0],
-          ),
+          gradient:
+              _isDarkMode ? _quickCardGradientDark : _quickCardGradientLight,
           border: Border.all(
             color: const Color(0xFF2A5886).withOpacity(.60),
             width: 1.15,
@@ -1199,169 +1430,21 @@ extension _HomeWidgets on _HomeScreenState {
     );
   }
 
-  // ------------------ retained old cards ------------------
-  // ignore: unused_element
-  Widget _serviceCardPro({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color iconColor,
-    required LinearGradient gradient,
-    required VoidCallback onTap,
-  }) {
-    final darkish = gradient.colors.last.computeLuminance() < .45;
-
-    return InkWell(
-      borderRadius: BorderRadius.circular(r22),
-      onTap: () => _tap(onTap),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
-        decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: BorderRadius.circular(r22),
-          border: Border.all(
-            color: darkish
-                ? Colors.white.withOpacity(.14)
-                : _accent.withOpacity(.18),
-          ),
-          boxShadow: _aquaGlow,
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: 54,
-              height: 54,
-              decoration: BoxDecoration(
-                color: _isDarkMode
-                    ? Colors.white.withOpacity(.10)
-                    : Colors.white.withOpacity(.88),
-                borderRadius: BorderRadius.circular(r18),
-                border: Border.all(
-                  color: iconColor.withOpacity(_isDarkMode ? .22 : .18),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: _accent.withOpacity(.12),
-                    blurRadius: 18,
-                    offset: const Offset(0, 10),
-                  )
-                ],
-              ),
-              child: Icon(icon, color: iconColor, size: 30),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.cairo(
-                color: darkish ? Colors.white : _ink,
-                fontWeight: FontWeight.w900,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.cairo(
-                color: darkish ? Colors.white.withOpacity(.78) : _inkSoft,
-                fontWeight: FontWeight.w700,
-                fontSize: 11.5,
-                height: 1.15,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ignore: unused_element
-  Widget _serviceCard({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(r22),
-      onTap: () => _tap(onTap),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(r22),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(.22),
-              blurRadius: 22,
-              offset: const Offset(0, 10),
-            )
-          ],
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: 54,
-              height: 54,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(.16),
-                borderRadius: BorderRadius.circular(r18),
-                border: Border.all(color: Colors.white.withOpacity(.16)),
-              ),
-              child: Icon(icon, color: Colors.white, size: 30),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.cairo(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.cairo(
-                color: Colors.white.withOpacity(.85),
-                fontWeight: FontWeight.w700,
-                fontSize: 11.5,
-                height: 1.15,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ================== OFFERS ==================
-  // ignore: unused_element
   void _openOfferDetails(OfferItem o) {
     return;
   }
 
-  // ignore: unused_element
   Widget _offersSlider() {
     return const SizedBox.shrink();
   }
 
-  // ---------------- DRAWER ----------------
   Drawer _buildDrawer() {
     return Drawer(
-      backgroundColor: surface,
-      child: ListView(
-        padding: EdgeInsets.zero,
+      backgroundColor: _isDarkMode ? const Color(0xFF0B1830) : surface,
+      child: Column(
         children: [
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.fromLTRB(16, 22, 16, 14),
             decoration: BoxDecoration(
               gradient: _premiumAppBarGradient,
@@ -1370,21 +1453,20 @@ extension _HomeWidgets on _HomeScreenState {
               bottom: false,
               child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: Colors.white.withOpacity(.16),
-                    child:
-                        const Icon(Icons.person, color: Colors.white, size: 28),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon:
+                        const Icon(Icons.close, color: Colors.white, size: 28),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          "Doctor Car",
+                          'Doctor Car',
                           style: GoogleFonts.cairo(
-                            fontSize: 18,
+                            fontSize: 20,
                             fontWeight: FontWeight.w900,
                             color: Colors.white,
                           ),
@@ -1392,8 +1474,8 @@ extension _HomeWidgets on _HomeScreenState {
                         const SizedBox(height: 2),
                         Text(
                           _isArabic
-                              ? "خدمات السيارات الذكية"
-                              : "Smart car services",
+                              ? 'خدمات السيارات الذكية'
+                              : 'Smart car services',
                           style: GoogleFonts.cairo(
                             fontSize: 13,
                             fontWeight: FontWeight.w800,
@@ -1403,82 +1485,123 @@ extension _HomeWidgets on _HomeScreenState {
                       ],
                     ),
                   ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close, color: Colors.white),
-                  )
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: Colors.white.withOpacity(.16),
+                    child:
+                        const Icon(Icons.person, color: Colors.white, size: 28),
+                  ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 6),
-          _drawerItem(
-            Icons.info_outline,
-            _isArabic ? "من نحن" : "About Us",
-            () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const AboutUsScreen()),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 24),
+              children: [
+                _drawerItem(
+                  Icons.info_outline_rounded,
+                  _isArabic ? 'من نحن' : 'About Us',
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AboutUsScreen()),
+                  ),
+                ),
+                _drawerItem(
+                  Icons.home_rounded,
+                  _isArabic ? 'الرئيسية' : 'Home',
+                  () {},
+                ),
+                _drawerItem(
+                  Icons.local_shipping_rounded,
+                  _isArabic ? 'خدمات الطرق' : 'Road Services',
+                  () => _goto(const RoadServicesScreen()),
+                ),
+                _drawerItem(
+                  Icons.shield_rounded,
+                  _isArabic ? 'التبليغ عن حادث' : 'Accident Report',
+                  () => _goto(const SmartAccidentScreen()),
+                ),
+                _drawerItem(
+                  Icons.storefront_rounded,
+                  _isArabic ? 'المتجر' : 'Store',
+                  () => _goto(const HomePage()),
+                ),
+                _drawerItem(
+                  Icons.phone_rounded,
+                  _isArabic ? 'تواصل معنا' : 'Contact',
+                  () => _goto(const ContactScreen()),
+                ),
+                _drawerItem(
+                  Icons.person_rounded,
+                  _isArabic ? 'حسابي' : 'Account',
+                  () => _goto(const AccountSettingsScreen()),
+                ),
+              ],
             ),
           ),
-          _drawerItem(
-            Icons.home_rounded,
-            _isArabic ? "الرئيسية" : "Home",
-            () {},
-          ),
-          _drawerItem(
-            Icons.local_shipping_rounded,
-            _isArabic ? "خدمات الطرق" : "Road Services",
-            () => _goto(const RoadServicesScreen()),
-          ),
-          _drawerItem(
-            Icons.shield_rounded,
-            _isArabic ? "التبليغ عن حادث" : "Accident Report",
-            () => _goto(const SmartAccidentScreen()),
-          ),
-          _drawerItem(
-            Icons.store_rounded,
-            _isArabic ? "المتجر" : "Store",
-            () => _goto(const HomePage()),
-          ),
-          _drawerItem(
-            Icons.phone_rounded,
-            _isArabic ? "تواصل معنا" : "Contact",
-            () => _goto(const ContactScreen()),
-          ),
-          _drawerItem(
-            Icons.person_rounded,
-            _isArabic ? "حسابي" : "Account",
-            () => _goto(const AccountSettingsScreen()),
-          ),
-          const SizedBox(height: 8),
         ],
       ),
     );
   }
 
-  ListTile _drawerItem(IconData icon, String title, VoidCallback onTap) {
-    return ListTile(
-      onTap: () => _tap(() {
-        Navigator.pop(context);
-        onTap();
-      }),
-      leading: Icon(icon, color: _accent),
-      title: Text(
-        title,
-        style: GoogleFonts.cairo(
-          color: textMain,
-          fontSize: 16,
-          fontWeight: FontWeight.w900,
+  Widget _drawerItem(IconData icon, String title, VoidCallback onTap) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: () => _tap(() {
+            Navigator.pop(context);
+            onTap();
+          }),
+          child: Ink(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            decoration: BoxDecoration(
+              color: _isDarkMode ? Colors.white.withOpacity(.04) : Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: _lineColor.withOpacity(.14)),
+              boxShadow: _isDarkMode
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(.03),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _isArabic
+                      ? Icons.chevron_left_rounded
+                      : Icons.chevron_right_rounded,
+                  color: textSub,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    textAlign: _isArabic ? TextAlign.right : TextAlign.left,
+                    style: GoogleFonts.cairo(
+                      color: textMain,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Icon(icon, color: _accent, size: 24),
+              ],
+            ),
+          ),
         ),
-      ),
-      trailing: Icon(
-        _isArabic ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
-        color: textSub,
       ),
     );
   }
 
-  // ================== CENTERS LIST ==================
   Widget _centersList() {
     return FutureBuilder<List<CenterItem>>(
       future: _centersFuture,
@@ -1500,7 +1623,7 @@ extension _HomeWidgets on _HomeScreenState {
   Widget _centersLoading() {
     return Column(
       children: [
-        _miniInfoCard(Icons.my_location, trKey("locating")),
+        _miniInfoCard(Icons.my_location, trKey('locating')),
         const SizedBox(height: 10),
         ...List.generate(4, (_) {
           return Container(
@@ -1532,7 +1655,7 @@ extension _HomeWidgets on _HomeScreenState {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              _locationError ?? trKey("needLocation"),
+              _locationError ?? trKey('needLocation'),
               style: bodyStrong,
             ),
           ),
@@ -1543,8 +1666,8 @@ extension _HomeWidgets on _HomeScreenState {
                   await _openGoogleMapsNearby();
                 } catch (_) {
                   _snack(_isArabic
-                      ? "تعذر فتح خرائط جوجل"
-                      : "Could not open Google Maps");
+                      ? 'تعذر فتح خرائط جوجل'
+                      : 'Could not open Google Maps');
                 }
                 return;
               }
@@ -1556,15 +1679,15 @@ extension _HomeWidgets on _HomeScreenState {
                   await _openGoogleMapsNearby();
                 } catch (_) {
                   _snack(_isArabic
-                      ? "افتح إعدادات الموقع يدويًا"
-                      : "Please open location settings manually");
+                      ? 'افتح إعدادات الموقع يدويًا'
+                      : 'Please open location settings manually');
                 }
               }
             },
             child: Text(
               kIsWeb
-                  ? (_isArabic ? "فتح خرائط جوجل" : "Open Google Maps")
-                  : trKey("openSettings"),
+                  ? (_isArabic ? 'فتح خرائط جوجل' : 'Open Google Maps')
+                  : trKey('openSettings'),
               style: GoogleFonts.cairo(
                 fontWeight: FontWeight.w900,
                 color: _accent,
@@ -1595,8 +1718,8 @@ extension _HomeWidgets on _HomeScreenState {
               Expanded(
                 child: Text(
                   _isArabic
-                      ? "لا يوجد مراكز ضمن $_selectedRadiusKm كم حالياً"
-                      : "No centers within $_selectedRadiusKm km right now",
+                      ? 'لا يوجد مراكز ضمن $_selectedRadiusKm كم حالياً'
+                      : 'No centers within $_selectedRadiusKm km right now',
                   style: bodyStrong,
                 ),
               ),
@@ -1620,12 +1743,12 @@ extension _HomeWidgets on _HomeScreenState {
                 ),
                 icon: const Icon(Icons.refresh, size: 18),
                 label: Text(
-                  trKey("retry"),
+                  trKey('retry'),
                   style: GoogleFonts.cairo(fontWeight: FontWeight.w900),
                 ),
               ),
               _gradientPillButton(
-                text: _isArabic ? "بحث في خرائط جوجل" : "Search on Google Maps",
+                text: _isArabic ? 'بحث في خرائط جوجل' : 'Search on Google Maps',
                 icon: Icons.map,
                 compact: false,
                 onTap: _openGoogleMapsNearby,
@@ -1755,34 +1878,33 @@ extension _HomeWidgets on _HomeScreenState {
     );
   }
 
-  // ================== HOW / WHY / CUSTOMER ==================
   Widget _howToUseDoctorCar() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionTitle(trKey("how")),
+        _sectionTitle(trKey('how')),
         const SizedBox(height: 12),
         Row(
           children: [
             _HowCard(
               icon: Icons.star,
-              text: _isArabic ? "قيم\nخدمتك" : "Rate\nService",
+              text: _isArabic ? 'قيم\nخدمتك' : 'Rate\nService',
               isDark: _isDarkMode,
             ),
             _HowCard(
               icon: Icons.payment,
               text:
-                  _isArabic ? "الدفع اون لاين\nأو كاش" : "Pay Online\nor Cash",
+                  _isArabic ? 'الدفع اون لاين\nأو كاش' : 'Pay Online\nor Cash',
               isDark: _isDarkMode,
             ),
             _HowCard(
               icon: Icons.assignment_turned_in,
-              text: _isArabic ? "احجز\nو تابع" : "Book\n& Track",
+              text: _isArabic ? 'احجز\nو تابع' : 'Book\n& Track',
               isDark: _isDarkMode,
             ),
             _HowCard(
               icon: Icons.location_on,
-              text: _isArabic ? "اختر\nالخدمة" : "Choose\nService",
+              text: _isArabic ? 'اختر\nالخدمة' : 'Choose\nService',
               isDark: _isDarkMode,
             ),
           ],
@@ -1816,7 +1938,7 @@ extension _HomeWidgets on _HomeScreenState {
                 ),
               ),
               const SizedBox(width: 12),
-              Text(trKey("why"), textAlign: TextAlign.center, style: h2),
+              Text(trKey('why'), textAlign: TextAlign.center, style: h2),
             ],
           ),
           const SizedBox(height: 18),
@@ -1832,26 +1954,26 @@ extension _HomeWidgets on _HomeScreenState {
             children: [
               _whyGridItem(
                 icon: Icons.verified_rounded,
-                title: _isArabic ? "فنيين معتمدين" : "Certified",
+                title: _isArabic ? 'فنيين معتمدين' : 'Certified',
                 subtitle:
-                    _isArabic ? "خبراء موثوقين بخبرة عالية" : "Trusted experts",
+                    _isArabic ? 'خبراء موثوقين بخبرة عالية' : 'Trusted experts',
               ),
               _whyGridItem(
                 icon: Icons.attach_money_rounded,
-                title: _isArabic ? "تسعير شفاف" : "Pricing",
-                subtitle: _isArabic ? "بدون أي رسوم مخفية" : "No hidden fees",
+                title: _isArabic ? 'تسعير شفاف' : 'Pricing',
+                subtitle: _isArabic ? 'بدون أي رسوم مخفية' : 'No hidden fees',
               ),
               _whyGridItem(
                 icon: Icons.security_rounded,
-                title: _isArabic ? "دعم التأمين" : "Insurance",
+                title: _isArabic ? 'دعم التأمين' : 'Insurance',
                 subtitle:
-                    _isArabic ? "تغطية كاملة للحوادث" : "Accident coverage",
+                    _isArabic ? 'تغطية كاملة للحوادث' : 'Accident coverage',
               ),
               _whyGridItem(
                 icon: Icons.map_rounded,
-                title: _isArabic ? "مراكز قريبة" : "Nearby",
+                title: _isArabic ? 'مراكز قريبة' : 'Nearby',
                 subtitle:
-                    _isArabic ? "أقرب مركز ليك على الخريطة" : "Closest on map",
+                    _isArabic ? 'أقرب مركز ليك على الخريطة' : 'Closest on map',
               ),
             ],
           ),
@@ -1925,7 +2047,7 @@ extension _HomeWidgets on _HomeScreenState {
       children: [
         Expanded(
           child: _gradientWideButton(
-            text: trKey("contact"),
+            text: trKey('contact'),
             icon: Icons.headset_mic_rounded,
             onTap: _showCallSheet,
           ),
@@ -1960,16 +2082,17 @@ extension _HomeWidgets on _HomeScreenState {
         child: Text(title, style: titleStyle),
       );
 
-  // ================== BOTTOM NAV ==================
   Widget _buildBottomNavCurvedWithCall() {
     return SizedBox(
-      height: 128,
+      height: 126,
       child: Stack(
         alignment: Alignment.bottomCenter,
+        clipBehavior: Clip.none,
         children: [
           Container(
-            height: 102,
-            padding: const EdgeInsets.only(top: 8, bottom: 14),
+            height: 100,
+            padding:
+                const EdgeInsets.only(top: 8, bottom: 12, left: 8, right: 8),
             decoration: BoxDecoration(
               gradient: _aquaCreamGradient,
               borderRadius: const BorderRadius.only(
@@ -1987,36 +2110,54 @@ extension _HomeWidgets on _HomeScreenState {
               border: Border.all(color: _accent.withOpacity(.18)),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _navItemBottom(
-                  icon: Icons.cottage_rounded,
-                  label: "الرئيسية",
-                  index: 0,
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _navItemBottom(
+                          icon: Icons.account_circle_rounded,
+                          label: _isArabic ? 'حسابي' : 'Account',
+                          index: 4,
+                        ),
+                      ),
+                      Expanded(
+                        child: _navItemBottom(
+                          icon: Icons.time_to_leave_rounded,
+                          label: _isArabic ? 'مركباتي' : 'My Cars',
+                          index: 3,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                _navItemBottom(
-                  icon: Icons.fact_check_rounded,
-                  label: "الطلبات",
-                  index: 1,
-                  badge: 2,
-                ),
-                const SizedBox(width: 88),
-                _navItemBottom(
-                  icon: Icons.time_to_leave_rounded,
-                  label: "مركباتي",
-                  index: 3,
-                ),
-                _navItemBottom(
-                  icon: Icons.account_circle_rounded,
-                  label: "حسابي",
-                  index: 4,
+                const SizedBox(width: 86),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _navItemBottom(
+                          icon: Icons.fact_check_rounded,
+                          label: _isArabic ? 'الطلبات' : 'Orders',
+                          index: 1,
+                          badge: 2,
+                        ),
+                      ),
+                      Expanded(
+                        child: _navItemBottom(
+                          icon: Icons.cottage_rounded,
+                          label: _isArabic ? 'الرئيسية' : 'Home',
+                          index: 0,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
           Positioned(
-            bottom: 50,
+            bottom: 46,
             child: GestureDetector(
               onTap: _showCallSheet,
               child: Container(
@@ -2047,7 +2188,7 @@ extension _HomeWidgets on _HomeScreenState {
                   child: Center(
                     child: Icon(
                       Icons.call_rounded,
-                      size: 38,
+                      size: 36,
                       color: _isDarkMode ? Colors.black : _ink,
                     ),
                   ),
@@ -2075,34 +2216,30 @@ extension _HomeWidgets on _HomeScreenState {
         switch (index) {
           case 0:
             break;
-
           case 1:
             await Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const OrdersScreen()),
             );
             break;
-
           case 3:
             _snack(
-              _isArabic ? "صفحة مركباتي قريبًا" : "My vehicles coming soon",
+              _isArabic ? 'صفحة مركباتي قريبًا' : 'My vehicles coming soon',
             );
             break;
-
           case 4:
             _goto(const AccountSettingsScreen());
             break;
-
           default:
             break;
         }
       },
-      child: SizedBox(
-        width: 74,
-        child: Semantics(
-          button: true,
-          selected: isActive,
-          label: label,
+      child: Semantics(
+        button: true,
+        selected: isActive,
+        label: label,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -2113,10 +2250,10 @@ extension _HomeWidgets on _HomeScreenState {
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 220),
                     curve: Curves.easeOut,
-                    width: isActive ? 52 : 48,
-                    height: isActive ? 52 : 48,
+                    width: isActive ? 50 : 46,
+                    height: isActive ? 50 : 46,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(17),
+                      borderRadius: BorderRadius.circular(16),
                       gradient: isActive
                           ? LinearGradient(
                               begin: Alignment.topLeft,
@@ -2152,7 +2289,7 @@ extension _HomeWidgets on _HomeScreenState {
                     ),
                     child: Icon(
                       icon,
-                      size: isActive ? 26 : 23,
+                      size: isActive ? 24 : 22,
                       color: isActive
                           ? Colors.white
                           : Colors.white.withOpacity(.90),
@@ -2160,15 +2297,15 @@ extension _HomeWidgets on _HomeScreenState {
                   ),
                   if (badge > 0)
                     Positioned(
-                      right: -1,
-                      top: -5,
+                      right: -2,
+                      top: -6,
                       child: Container(
                         constraints: const BoxConstraints(
-                          minWidth: 22,
-                          minHeight: 20,
+                          minWidth: 20,
+                          minHeight: 18,
                         ),
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
+                          horizontal: 5,
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
@@ -2184,10 +2321,10 @@ extension _HomeWidgets on _HomeScreenState {
                           ],
                         ),
                         child: Text(
-                          badge > 99 ? "99+" : "$badge",
+                          badge > 99 ? '99+' : '$badge',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.cairo(
-                            fontSize: 10,
+                            fontSize: 9.5,
                             fontWeight: FontWeight.w900,
                             color: Colors.white,
                             height: 1,
@@ -2197,17 +2334,18 @@ extension _HomeWidgets on _HomeScreenState {
                     ),
                 ],
               ),
-              const SizedBox(height: 7),
+              const SizedBox(height: 6),
               SizedBox(
                 height: 16,
-                child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
                   child: Text(
                     label,
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.cairo(
-                      fontSize: 10.6,
+                      fontSize: 10.2,
                       fontWeight: isActive ? FontWeight.w900 : FontWeight.w800,
                       color: isActive
                           ? Colors.white

@@ -1,43 +1,160 @@
 import '../../models/product_model.dart';
 
 List<ProductModel> allProducts = [
-  ProductModel(
+  const ProductModel(
     id: 1,
     brandId: 1,
     carModelId: 1,
     categoryId: 1,
-    name: "Toyota Corolla Oil Filter",
-    description: "High quality oil filter for Toyota Corolla.",
+    name: "فلتر زيت تويوتا كورولا",
+    description:
+        "فلتر زيت مخصص لتويوتا كورولا، يساعد على تنقية الزيت وحماية المحرك وتحسين كفاءة التشغيل.",
     price: 120.0,
-    imageUrl:
-        "https://images.pexels.com/photos/4489744/pexels-photo-4489744.jpeg",
+    imageUrl: "assets/images/products/toyota_corolla_oil_filter.png",
     oemNumber: "90915-10003",
     inStock: true,
   ),
-  ProductModel(
+  const ProductModel(
     id: 2,
+    brandId: 1,
+    carModelId: 1,
+    categoryId: 2,
+    name: "فلتر هواء تويوتا كورولا",
+    description:
+        "فلتر هواء عالي الجودة لتويوتا كورولا، يوفر تدفق هواء أنظف للمحرك ويساعد على تحسين الأداء.",
+    price: 145.0,
+    imageUrl: "assets/images/products/toyota_corolla_air_filter.png",
+    oemNumber: "17801-21050",
+    inStock: true,
+  ),
+  const ProductModel(
+    id: 3,
+    brandId: 1,
+    carModelId: 1,
+    categoryId: 3,
+    name: "فحمات فرامل أمامية تويوتا كورولا",
+    description:
+        "فحمات فرامل أمامية متوافقة مع تويوتا كورولا، تمنح ثباتًا أفضل واستجابة آمنة أثناء القيادة.",
+    price: 260.0,
+    imageUrl: "assets/images/products/toyota_corolla_brake_pads_front.png",
+    oemNumber: "04465-02220",
+    inStock: true,
+  ),
+  const ProductModel(
+    id: 4,
+    brandId: 1,
+    carModelId: 1,
+    categoryId: 4,
+    name: "شموع احتراق تويوتا كورولا",
+    description:
+        "بواجي أصلية أو بديلة بجودة ممتازة لتويوتا كورولا، مناسبة لتحسين كفاءة الاشتعال واستهلاك الوقود.",
+    price: 190.0,
+    imageUrl: "assets/images/products/toyota_corolla_spark_plugs.png",
+    oemNumber: "90919-01253",
+    inStock: true,
+  ),
+  const ProductModel(
+    id: 5,
     brandId: 7,
     carModelId: 28,
     categoryId: 1,
-    name: "Audi A3 Air Filter",
-    description: "OEM air filter for Audi A3 engines.",
+    name: "فلتر هواء أودي A3",
+    description:
+        "فلتر هواء لمحركات أودي A3، مصمم للحفاظ على نظافة الهواء الداخل للمحرك وتحسين الأداء.",
     price: 180.0,
-    imageUrl:
-        "https://images.pexels.com/photos/4489746/pexels-photo-4489746.jpeg",
+    imageUrl: "assets/images/products/audi_a3_engine_air_filter.png",
     oemNumber: "1K0129620",
     inStock: true,
   ),
-  ProductModel(
-    id: 3,
+  const ProductModel(
+    id: 6,
+    brandId: 7,
+    carModelId: 28,
+    categoryId: 2,
+    name: "فلتر مكيف أودي A3",
+    description:
+        "فلتر مكيف داخلي لأودي A3، يقلل الغبار والشوائب داخل المقصورة ويوفر هواء أنظف.",
+    price: 160.0,
+    imageUrl: "assets/images/products/audi_a3_cabin_filter.png",
+    oemNumber: "1K0819644B",
+    inStock: true,
+  ),
+  const ProductModel(
+    id: 7,
+    brandId: 7,
+    carModelId: 28,
+    categoryId: 3,
+    name: "طنابير أمامية أودي A3",
+    description:
+        "طنابير فرامل أمامية لأودي A3 مصممة لتحمل الحرارة وتوفير أداء فرملة ثابت وآمن.",
+    price: 620.0,
+    imageUrl: "assets/images/products/audi_a3_front_brake_disc.png",
+    oemNumber: "1K0615301AA",
+    inStock: false,
+  ),
+  const ProductModel(
+    id: 8,
+    brandId: 7,
+    carModelId: 28,
+    categoryId: 5,
+    name: "مساعد أمامي أودي A3",
+    description:
+        "مساعد أمامي لأودي A3 لتحسين الثبات والراحة أثناء القيادة وتقليل الاهتزازات.",
+    price: 780.0,
+    imageUrl: "assets/images/products/audi_a3_front_shock_absorber.png",
+    oemNumber: "1K0413031BM",
+    inStock: true,
+  ),
+  const ProductModel(
+    id: 9,
     brandId: 6,
     carModelId: 23,
     categoryId: 1,
-    name: "BMW Oil Pump",
-    description: "High performance oil pump for BMW engines.",
+    name: "طرمبة زيت BMW",
+    description:
+        "طرمبة زيت عالية الكفاءة لسيارات BMW، تساعد في الحفاظ على ضغط الزيت المناسب داخل المحرك.",
     price: 900.0,
-    imageUrl:
-        "https://images.pexels.com/photos/4489748/pexels-photo-4489748.jpeg",
+    imageUrl: "assets/images/products/bmw_oil_pump.png",
     oemNumber: "11417501566",
     inStock: true,
+  ),
+  const ProductModel(
+    id: 10,
+    brandId: 6,
+    carModelId: 23,
+    categoryId: 2,
+    name: "فلتر زيت BMW",
+    description:
+        "فلتر زيت لمحركات BMW، يوفر حماية أفضل للمحرك من الشوائب والرواسب أثناء التشغيل.",
+    price: 170.0,
+    imageUrl: "assets/images/products/bmw_oil_filter.png",
+    oemNumber: "11427512300",
+    inStock: true,
+  ),
+  const ProductModel(
+    id: 11,
+    brandId: 6,
+    carModelId: 23,
+    categoryId: 3,
+    name: "فحمات فرامل BMW",
+    description:
+        "فحمات فرامل متوافقة مع BMW، توفر أداء كبح قوي وثابت للاستخدام اليومي والقيادة الطويلة.",
+    price: 340.0,
+    imageUrl: "assets/images/products/bmw_brake_pads.png",
+    oemNumber: "34116794917",
+    inStock: true,
+  ),
+  const ProductModel(
+    id: 12,
+    brandId: 6,
+    carModelId: 23,
+    categoryId: 5,
+    name: "مقص أمامي BMW",
+    description:
+        "مقص أمامي عالي التحمل لسيارات BMW، يساعد على الثبات وتحسين أداء نظام التعليق.",
+    price: 850.0,
+    imageUrl: "assets/images/products/bmw_front_control_arm.png",
+    oemNumber: "31126775959",
+    inStock: false,
   ),
 ];

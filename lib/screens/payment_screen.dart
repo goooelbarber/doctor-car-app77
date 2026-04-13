@@ -496,7 +496,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  // ================== PAYMENT METHOD CARD ==================
   Widget _paymentCard({
     required String id,
     required String title,
@@ -591,7 +590,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  // ================== WALLET BOX ==================
   Widget _walletBox() {
     return _card(
       withGlow: true,
@@ -709,7 +707,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
   }
 
-  // ================== INVOICE ==================
   Widget _invoiceCard() {
     return _card(
       child: Column(
@@ -840,7 +837,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  // ================== PAY BUTTON ==================
   Widget _payButton() {
     final btnText = selected == "cash"
         ? "تأكيد الدفع نقدًا"
@@ -904,22 +900,38 @@ class _PaymentScreenState extends State<PaymentScreen> {
     if (_isPaying) return;
 
     HapticFeedback.mediumImpact();
-    setState(() => _isPaying = true);
 
-    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) {
+      setState(() => _isPaying = true);
+    }
 
-    if (!mounted) return;
-    setState(() => _isPaying = false);
+    try {
+      // TODO: replace with real payment API
+      await Future.delayed(const Duration(seconds: 2));
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ReviewScreen(orderId: widget.orderId),
-      ),
-    );
+      if (!mounted) return;
+
+      setState(() => _isPaying = false);
+
+      final reviewResult = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ReviewScreen(orderId: widget.orderId),
+        ),
+      );
+
+      if (!mounted) return;
+
+      if (reviewResult == true) {
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isPaying = false);
+      _snack("حدث خطأ أثناء تأكيد الدفع");
+    }
   }
 
-  // ================== LOADING ==================
   Widget _loadingOverlay() {
     return Container(
       color: Colors.black.withOpacity(.35),

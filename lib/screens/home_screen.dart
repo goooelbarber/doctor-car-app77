@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+// ignore: unused_import
 import 'dart:io';
 // ignore: unused_import
 import 'dart:typed_data';
@@ -23,6 +24,7 @@ import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
 
 import '../config/api_config.dart';
+// ignore: unused_import
 import '../features/photo_diagnosis/photo_preview_screen.dart';
 import '../pages/home/home_page.dart';
 import '../services/support_chat_service.dart';
@@ -58,8 +60,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool _isArabic = true;
-  bool _isDarkMode = false;
+  bool _isDarkMode = true;
   bool _prefsLoaded = false;
+
+  bool _showAllCentersInHome = true;
 
   Position? _myPos;
   String? _locationError;
@@ -71,13 +75,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int _selectedRadiusKm = 20;
 
   double get _maxRadiusMeters => _selectedRadiusKm * 1000.0;
+  // ignore: unused_field
   static const int _centersLimit = 50;
 
   final PageController _bannerController = PageController();
   int _currentBanner = 0;
   Timer? _timer;
 
-  int _navIndex = 4;
+  int _navIndex = 0;
 
   static const Color _primary = Color(0xFF7CCBFF);
   // ignore: unused_field
@@ -113,13 +118,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   late Future<List<CenterItem>> _centersFuture;
 
-  static Color? get _gold => null;
-
   @override
   void initState() {
     super.initState();
 
-    _centersFuture = _fetchCentersNearMe();
+    _centersFuture = Future.value(<CenterItem>[]);
     _loadPrefs();
 
     _timer = Timer.periodic(const Duration(seconds: 4), (_) {
@@ -208,13 +211,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   const SliverToBoxAdapter(child: SizedBox(height: 18)),
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    sliver: SliverToBoxAdapter(child: _quickServicesRow()),
+                    sliver: SliverToBoxAdapter(child: _buildQuickActionGrid()),
                   ),
                   const SliverToBoxAdapter(child: SizedBox(height: 22)),
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     sliver: SliverToBoxAdapter(
-                      child: _sectionTitle(trKey("nearby")),
+                      child: _sectionTitle(
+                        _isArabic
+                            ? "المراكز القريبة وكل المراكز"
+                            : "Nearby & all centers",
+                      ),
                     ),
                   ),
                   SliverPadding(

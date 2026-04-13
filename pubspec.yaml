@@ -8,44 +8,52 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
-  carousel_slider: ^4.2.1
-  package_info_plus: ^9.0.0
-  # الأساسيات
+  # Core UI
   cupertino_icons: ^1.0.6
-  font_awesome_flutter: ^10.7.0
   google_fonts: ^6.2.1
+  font_awesome_flutter: ^10.7.0
   provider: ^6.1.2
+  carousel_slider: ^4.2.1
   flutter_rating_bar: ^4.0.1
   lottie: ^3.1.0
-  local_auth: ^2.1.8
+  avatar_glow: ^3.0.1
 
-  # الشبكات
+  # Device / Auth
+  local_auth: ^2.1.8
+  permission_handler: ^11.0.1
+  shared_preferences: ^2.3.2
+  package_info_plus: ^9.0.0
+
+  # Networking
   http: ^1.1.0
   dio: ^5.4.3
   http_parser: ^4.0.2
   socket_io_client: ^2.0.3
   mime: ^1.0.5
+  url_launcher: ^6.1.10
+  share_plus: ^7.2.1
 
-  # ذكاء اصطناعي
+  # AI
   dart_openai: ^5.1.0
 
-  # الصوت
+  # Audio / Speech
   speech_to_text: ^7.3.0
-
-  # الوسائط
-  image_picker: ^1.0.4
-  permission_handler: ^11.0.1
-  record: ^6.0.0
-  path_provider: ^2.1.1
-  path: ^1.8.3
   flutter_tts: ^3.8.2
   audioplayers: ^5.2.0
+  record: ^6.0.0
 
-  # الكاميرا
+  # Media
+  image_picker: ^1.0.4
+  path_provider: ^2.1.1
+  path: ^1.8.3
+
+  # Camera
   camera: ^0.10.5+2
- 
-  # الخرائط
+
+  # Maps / Location
   google_maps_flutter: ^2.5.0
   google_maps_flutter_web: ^0.5.4
   geolocator: ^10.1.0
@@ -53,21 +61,15 @@ dependencies:
   flutter_polyline_points: ^2.1.0
   flutter_animarker: ^3.2.0
 
-  # 🔵 Bluetooth (OBD Support)
+  # Bluetooth / OBD
   flutter_blue_plus: ^1.31.16
 
-  # 🟢 Swipe Confirm Button
+  # Swipe Button
   swipeable_button_view: ^0.0.2
 
-  # الترجمة
-  flutter_localizations:
-    sdk: flutter
+  # Localization
   intl: ^0.20.2
   easy_localization: ^3.0.5
-
-  # الروابط
-  url_launcher: ^6.1.10
-  share_plus: ^7.2.1
 
   # Firebase
   firebase_core: ^4.4.0
@@ -77,27 +79,23 @@ dependencies:
   firebase_crashlytics: ^5.0.7
   firebase_analytics: ^12.1.2
 
-  # تسجيل الدخول
+  # Social Login
   google_sign_in: ^6.2.1
   flutter_facebook_auth: ^6.1.4
   sign_in_with_apple: ^6.1.0
 
-  # الدفع
+  # Payments
   flutter_stripe: ^10.1.0
 
-  # التخزين
-  shared_preferences: ^2.3.2
-
-  # dotenv
+  # Config
   flutter_dotenv: ^5.1.0
 
-  # حساس التسارع
+  # Sensors
   sensors_plus: ^7.0.0
 
-  # PDF / WebView / UI
+  # PDF / WebView
   pdf: ^3.11.3
   webview_flutter: ^4.13.0
-  avatar_glow: ^3.0.1
 
 dev_dependencies:
   flutter_test:
@@ -108,41 +106,78 @@ flutter:
   uses-material-design: true
 
   assets:
+    # General images
     - assets/images/
-    - assets/images/offer3.png
     - assets/images/offer1.png
     - assets/images/offer2.png
+    - assets/images/offer3.png
     - assets/images/accient.png
     - assets/images/logo1.png
     - assets/images/A1.png
-    - assets/images/road.png
-    - assets/images/privacy.png
-    - assets/images/store.png
     - assets/images/A2.png
     - assets/images/A3.png
     - assets/images/A4.png
     - assets/images/A5.png
     - assets/images/A6.png
     - assets/images/A7.png
+    - assets/images/road.png
+    - assets/images/privacy.png
+    - assets/images/store.png
     - assets/images/acc.png
     - assets/images/xx.png
-    - assets/images/44.png 
+    - assets/images/44.png
     - assets/images/444.png
     - assets/images/4444.png
     - assets/images/4.png
     - assets/images/nav_call.png
-    - assets/translations/
+    - assets/images/searching.gif.png
+    - assets/images/s.png
+    - assets/images/ss.png
+    - assets/images/sss.png
+    - assets/images/ssss.png
+    - assets/images/sssss.png
+    - assets/images/ssssss.png
+    - assets/images/q.png
+    - assets/images/qq.png
+    # Store folders
+    - assets/images/products/
+    - assets/images/brands/
+
+    # Product images
+    - assets/images/products/toyota_corolla_oil_filter.png
+    - assets/images/products/toyota_corolla_air_filter.png
+    - assets/images/products/toyota_corolla_brake_pads_front.png
+    - assets/images/products/toyota_corolla_spark_plugs.png
+    - assets/images/products/audi_a3_engine_air_filter.png
+    - assets/images/products/audi_a3_cabin_filter.png
+    - assets/images/products/audi_a3_front_brake_disc.png
+    - assets/images/products/audi_a3_front_shock_absorber.png
+    - assets/images/products/bmw_oil_pump.png
+    - assets/images/products/bmw_oil_filter.png
+    - assets/images/products/bmw_brake_pads.png
+    - assets/images/products/bmw_front_control_arm.png
+
+    # Placeholders
+    - assets/images/placeholder_part.png
+    - assets/images/placeholder_brand.png
+
+    # Lottie
     - assets/lottie/
     - assets/lottie/doctor_car_intro.json
 
+    # Translations
+    - assets/translations/
+
+    # Icons
     - assets/icons/user_pin.png
     - assets/icons/tech_pin.png
     - assets/icons/car_top.png
     - assets/icons/car_top1.png
 
+    # Maps
     - assets/map_styles/uber_dark.json
-    - assets/images/searching.gif.png
 
+    # Env
     - .env
 
   fonts:

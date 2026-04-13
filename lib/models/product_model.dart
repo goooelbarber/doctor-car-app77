@@ -10,7 +10,7 @@ class ProductModel {
   final String oemNumber;
   final bool inStock;
 
-  ProductModel({
+  const ProductModel({
     required this.id,
     required this.brandId,
     required this.carModelId,
@@ -22,4 +22,20 @@ class ProductModel {
     required this.oemNumber,
     required this.inStock,
   });
+
+  bool get hasRealImage {
+    final lower = imageUrl.trim().toLowerCase();
+    if (lower.isEmpty) return false;
+    if (lower.contains('placeholder')) return false;
+    if (lower.contains('dummy')) return false;
+    if (lower.contains('random')) return false;
+    if (lower.contains('unsplash')) return false;
+    if (lower.contains('pexels')) return false;
+    return true;
+  }
+
+  String get stockLabel => inStock ? 'متوفر' : 'غير متوفر';
+
+  String get displayOemNumber =>
+      oemNumber.trim().isEmpty ? 'غير متوفر' : oemNumber.trim();
 }

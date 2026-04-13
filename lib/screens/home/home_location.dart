@@ -8,6 +8,8 @@ extension _HomePrefsAndLocation on _HomeScreenState {
     if (!mounted) return;
 
     final savedRadius = prefs.getInt("nearbyRadiusKm");
+    final savedShowAll = prefs.getBool("showAllCentersInHome");
+
     final radius = (_HomeScreenState._radiusOptionsKm.contains(savedRadius))
         ? savedRadius!
         : _selectedRadiusKm;
@@ -15,8 +17,9 @@ extension _HomePrefsAndLocation on _HomeScreenState {
     // ignore: invalid_use_of_protected_member
     setState(() {
       _isArabic = prefs.getBool("isArabic") ?? true;
-      _isDarkMode = prefs.getBool("isDarkMode") ?? false;
+      _isDarkMode = prefs.getBool("isDarkMode") ?? true;
       _selectedRadiusKm = radius;
+      _showAllCentersInHome = savedShowAll ?? true;
       _prefsLoaded = true;
     });
 
@@ -27,6 +30,7 @@ extension _HomePrefsAndLocation on _HomeScreenState {
     HapticFeedback.selectionClick();
     // ignore: invalid_use_of_protected_member
     setState(() => _isArabic = !_isArabic);
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool("isArabic", _isArabic);
   }
@@ -35,12 +39,14 @@ extension _HomePrefsAndLocation on _HomeScreenState {
     HapticFeedback.selectionClick();
     // ignore: invalid_use_of_protected_member
     setState(() => _isDarkMode = !_isDarkMode);
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool("isDarkMode", _isDarkMode);
   }
 
   Future<void> _setRadiusKm(int km) async {
     if (km == _selectedRadiusKm) return;
+
     HapticFeedback.selectionClick();
     // ignore: invalid_use_of_protected_member
     setState(() => _selectedRadiusKm = km);
@@ -51,54 +57,75 @@ extension _HomePrefsAndLocation on _HomeScreenState {
     await _refresh();
   }
 
-  void _goto(Widget page) =>
-      Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+  // ignore: unused_element
+  Future<void> _toggleShowAllCentersInHome() async {
+    HapticFeedback.selectionClick();
+
+    // ignore: invalid_use_of_protected_member
+    setState(() {
+      _showAllCentersInHome = !_showAllCentersInHome;
+    });
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool("showAllCentersInHome", _showAllCentersInHome);
+
+    await _refresh();
+  }
+
+  void _goto(Widget page) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+  }
 
   void _snack(String msg) {
     if (!mounted) return;
+
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content:
-            Text(msg, style: GoogleFonts.cairo(fontWeight: FontWeight.w800)),
+        content: Text(
+          msg,
+          style: GoogleFonts.cairo(fontWeight: FontWeight.w800),
+        ),
         behavior: SnackBarBehavior.floating,
         backgroundColor:
-            _isDarkMode ? const Color(0xff0B1220) : const Color(0xff111827),
+            _isDarkMode ? const Color(0xFF0B1220) : const Color(0xFF111827),
       ),
     );
   }
 
-  // ================== Location Cache ==================
-  // ⚠️ مفيش fields هنا — المتغيرات موجودة في _HomeScreenState:
-  // Position? _cachedPos;
-  // DateTime? _cachedPosAt;
-
+  // ================== Cache ==================
   bool get _hasFreshCachedPos {
     if (_cachedPos == null || _cachedPosAt == null) return false;
     final age = DateTime.now().difference(_cachedPosAt!);
-    return age.inSeconds <= 45; // cache لمدة 45 ثانية
+    return age.inSeconds <= 60;
   }
 
   void _setCachedPos(Position p) {
     _cachedPos = p;
     _cachedPosAt = DateTime.now();
     _myPos = p;
-    // ignore: invalid_use_of_protected_member
-    if (mounted) setState(() {});
+
+    if (mounted) {
+      // ignore: invalid_use_of_protected_member
+      setState(() {});
+    }
   }
 
-  // ================== LOCATION (geolocator) ==================
+  // ================== Location ==================
   Future<Position> _getAccurateLocation({bool force = false}) async {
-    // ✅ استخدم cache لو موجودة وحديثة
-    if (!force && _hasFreshCachedPos) return _cachedPos!;
+    if (!force && _hasFreshCachedPos) {
+      return _cachedPos!;
+    }
 
-    // ✅ على الويب مفيش serviceEnabled بنفس الطريقة
     if (!kIsWeb) {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) throw Exception("LOCATION_SERVICE_DISABLED");
+      if (!serviceEnabled) {
+        throw Exception("LOCATION_SERVICE_DISABLED");
+      }
     }
 
     LocationPermission permission = await Geolocator.checkPermission();
+
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
@@ -106,11 +133,11 @@ extension _HomePrefsAndLocation on _HomeScreenState {
     if (permission == LocationPermission.denied) {
       throw Exception("LOCATION_PERMISSION_DENIED");
     }
+
     if (permission == LocationPermission.deniedForever) {
       throw Exception("LOCATION_PERMISSION_DENIED_FOREVER");
     }
 
-    // ✅ last known سريع
     try {
       final last = await Geolocator.getLastKnownPosition();
       if (last != null && !force) {
@@ -118,7 +145,6 @@ extension _HomePrefsAndLocation on _HomeScreenState {
       }
     } catch (_) {}
 
-    // ✅ current
     try {
       final current = await Geolocator.getCurrentPosition(
         desiredAccuracy: kIsWeb ? LocationAccuracy.low : LocationAccuracy.high,
@@ -134,7 +160,7 @@ extension _HomePrefsAndLocation on _HomeScreenState {
     }
   }
 
-  // ================== Google Maps Nearby (Fallback) ==================
+  // ================== Maps ==================
   Future<void> _openGoogleMapsNearby() async {
     try {
       final pos = await _getAccurateLocation();
@@ -157,7 +183,7 @@ extension _HomePrefsAndLocation on _HomeScreenState {
     }
   }
 
-  // ================== Manual fallback (from your JSON) ==================
+  // ================== Manual fallback ==================
   List<CenterItem> _manualCentersFallback() {
     final raw = <Map<String, dynamic>>[
       {
@@ -174,8 +200,8 @@ extension _HomePrefsAndLocation on _HomeScreenState {
       {
         "id": "manual-2",
         "name": "مركز الوطنية لخدمات وصيانة السيارات",
-        "lat": 31.418,
-        "lng": 31.815,
+        "lat": 31.4180,
+        "lng": 31.8150,
         "address": "دمياط الجديدة",
         "phone": "01000332305",
         "rating": 3.9,
@@ -185,20 +211,110 @@ extension _HomePrefsAndLocation on _HomeScreenState {
       {
         "id": "manual-3",
         "name": "Tecno Car / Shokry Shata",
-        "lat": 31.42,
-        "lng": 31.81,
+        "lat": 31.4200,
+        "lng": 31.8100,
         "address": "ثان دمياط",
         "phone": "01002271477",
         "rating": 4.6,
         "image": "",
         "source": "manual",
       },
+      {
+        "id": "manual-4",
+        "name": "مركز الأمان لصيانة السيارات",
+        "lat": 31.4301,
+        "lng": 31.8015,
+        "address": "دمياط",
+        "phone": "01011111111",
+        "rating": 4.3,
+        "image": "",
+        "source": "manual",
+      },
+      {
+        "id": "manual-5",
+        "name": "Auto Care Center",
+        "lat": 31.4014,
+        "lng": 31.7920,
+        "address": "دمياط الجديدة",
+        "phone": "01022222222",
+        "rating": 4.1,
+        "image": "",
+        "source": "manual",
+      },
     ];
 
-    return raw.map((e) => CenterItem.fromJson(e)).toList();
+    return raw.map(CenterItem.fromJson).toList();
   }
 
-  // ================== NETWORK: Centers Nearby ==================
+  // ================== Helpers ==================
+  List<CenterItem> _dedupeCenters(List<CenterItem> input) {
+    final map = <String, CenterItem>{};
+
+    for (final c in input) {
+      final key = (c.id.isNotEmpty)
+          ? c.id
+          : "${c.name.trim()}_${c.lat}_${c.lng}_${c.phone}";
+      map[key] = c;
+    }
+
+    return map.values.toList();
+  }
+
+  List<CenterItem> _sortCentersForHome(List<CenterItem> centers) {
+    final items = [...centers];
+
+    items.sort((a, b) {
+      final ad = a.distanceMeters ?? double.infinity;
+      final bd = b.distanceMeters ?? double.infinity;
+
+      if (ad != bd) {
+        return ad.compareTo(bd);
+      }
+
+      return b.rating.compareTo(a.rating);
+    });
+
+    return items;
+  }
+
+  List<CenterItem> _applyHomeVisibilityRule(List<CenterItem> allCenters) {
+    if (_showAllCentersInHome) {
+      return _sortCentersForHome(allCenters);
+    }
+
+    final withinRadius = allCenters.where((c) {
+      final d = c.distanceMeters;
+      return d != null && d <= _maxRadiusMeters;
+    }).toList();
+
+    return _sortCentersForHome(withinRadius);
+  }
+
+  Future<List<CenterItem>> _decorateCentersWithDistance(
+    Position pos,
+    List<CenterItem> list,
+  ) async {
+    final result = <CenterItem>[];
+
+    for (final c in list) {
+      if (!c.hasCoords) continue;
+
+      final d = (c.distanceMeters != null && c.distanceMeters! > 0)
+          ? c.distanceMeters!
+          : Geolocator.distanceBetween(
+              pos.latitude,
+              pos.longitude,
+              c.lat!,
+              c.lng!,
+            );
+
+      result.add(c.copyWith(distanceMeters: d));
+    }
+
+    return result;
+  }
+
+  // ================== Fetch centers ==================
   Future<List<CenterItem>> _fetchCentersNearMe() async {
     _locationError = null;
 
@@ -207,15 +323,18 @@ extension _HomePrefsAndLocation on _HomeScreenState {
       pos = await _getAccurateLocation();
     } catch (e) {
       _locationError = _mapLocationError(e.toString());
-      return <CenterItem>[];
+
+      final manual = _manualCentersFallback();
+      return _sortCentersForHome(manual);
     }
 
     final uri = Uri.parse(
       ApiConfig.nearbyCenters(
         lat: pos.latitude,
         lng: pos.longitude,
-        limit: _HomeScreenState._centersLimit,
-        maxDistanceMeters: _maxRadiusMeters.toInt(),
+        limit: 200,
+        maxDistanceMeters:
+            _showAllCentersInHome ? 500000 : _maxRadiusMeters.toInt(),
       ),
     );
 
@@ -231,7 +350,7 @@ extension _HomePrefsAndLocation on _HomeScreenState {
         return await _manualWithDistances(pos);
       }
 
-      final List<CenterItem> centers = [];
+      final apiCenters = <CenterItem>[];
 
       for (final item in decoded) {
         if (item is! Map<String, dynamic>) continue;
@@ -239,31 +358,36 @@ extension _HomePrefsAndLocation on _HomeScreenState {
         final center = CenterItem.fromJson(item);
         if (!center.hasCoords) continue;
 
-        final double d =
-            (center.distanceMeters != null && center.distanceMeters! > 0)
-                ? center.distanceMeters!
-                : Geolocator.distanceBetween(
-                    pos.latitude,
-                    pos.longitude,
-                    center.lat!,
-                    center.lng!,
-                  );
+        final d = (center.distanceMeters != null && center.distanceMeters! > 0)
+            ? center.distanceMeters!
+            : Geolocator.distanceBetween(
+                pos.latitude,
+                pos.longitude,
+                center.lat!,
+                center.lng!,
+              );
 
-        if (d > _maxRadiusMeters) continue;
-
-        centers.add(center.copyWith(distanceMeters: d));
+        apiCenters.add(center.copyWith(distanceMeters: d));
       }
 
-      if (centers.isEmpty) {
-        return await _manualWithDistances(pos);
+      final manualCenters =
+          await _decorateCentersWithDistance(pos, _manualCentersFallback());
+
+      final merged = _dedupeCenters([
+        ...apiCenters,
+        ...manualCenters,
+      ]);
+
+      final visible = _applyHomeVisibilityRule(merged);
+
+      if (visible.isEmpty) {
+        _locationError = _isArabic
+            ? "لا توجد مراكز متاحة الآن."
+            : "No centers available right now";
+        return _sortCentersForHome(merged);
       }
 
-      centers.sort(
-        (a, b) => (a.distanceMeters ?? double.infinity)
-            .compareTo(b.distanceMeters ?? double.infinity),
-      );
-
-      return centers;
+      return visible;
     } catch (_) {
       return await _manualWithDistances(pos);
     }
@@ -271,10 +395,11 @@ extension _HomePrefsAndLocation on _HomeScreenState {
 
   Future<List<CenterItem>> _manualWithDistances(Position pos) async {
     final manual = _manualCentersFallback();
-    final filtered = <CenterItem>[];
+    final all = <CenterItem>[];
 
     for (final c in manual) {
       if (!c.hasCoords) continue;
+
       final d = Geolocator.distanceBetween(
         pos.latitude,
         pos.longitude,
@@ -282,22 +407,19 @@ extension _HomePrefsAndLocation on _HomeScreenState {
         c.lng!,
       );
 
-      if (d > _maxRadiusMeters) continue;
-      filtered.add(c.copyWith(distanceMeters: d));
+      all.add(c.copyWith(distanceMeters: d));
     }
 
-    filtered.sort(
-      (a, b) => (a.distanceMeters ?? double.infinity)
-          .compareTo(b.distanceMeters ?? double.infinity),
-    );
+    final visible = _applyHomeVisibilityRule(all);
 
-    if (filtered.isEmpty) {
+    if (visible.isEmpty) {
       _locationError = _isArabic
           ? "لا توجد مراكز ضمن النطاق الحالي."
           : "No centers within the selected range.";
+      return _sortCentersForHome(all);
     }
 
-    return filtered;
+    return visible;
   }
 
   String _mapLocationError(String msg) {
@@ -306,31 +428,38 @@ extension _HomePrefsAndLocation on _HomeScreenState {
           ? "خدمة الموقع مقفولة.. فعّل GPS ثم جرّب تاني ✅"
           : "Location services are OFF. Enable GPS then try again ✅";
     }
+
     if (msg.contains("LOCATION_PERMISSION_DENIED_FOREVER")) {
       return _isArabic
           ? "صلاحية الموقع مرفوضة نهائيًا.. فعّلها من الإعدادات ✅"
           : "Location permission denied forever. Enable it from settings ✅";
     }
+
     if (msg.contains("LOCATION_PERMISSION_DENIED")) {
       return trKey("needLocation");
     }
+
     if (msg.contains("LOCATION_TIMEOUT")) {
       return _isArabic
           ? "أخذ تحديد الموقع وقت طويل.. فعّل Location وحاول مرة أخرى ✅"
           : "Location timed out. Enable Location and try again ✅";
     }
+
     if (msg.contains("LOCATION_FAILED")) {
       return trKey("needLocation");
     }
+
     return trKey("loadFail");
   }
 
   Future<void> _refresh() async {
     HapticFeedback.selectionClick();
+
     // ignore: invalid_use_of_protected_member
     setState(() {
       _centersFuture = _fetchCentersNearMe();
     });
+
     await _centersFuture;
   }
 }

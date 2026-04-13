@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'vehicles/vehicle_screen.dart';
-
 import 'ai_diagnosis/ai_diagnosis_screen.dart';
 import 'confirm_request_screen.dart';
 import 'searching_technician_screen.dart';
@@ -15,7 +14,12 @@ import 'select_location_screen.dart';
 import 'smart_accident_screen.dart';
 
 class RoadServicesScreen extends StatefulWidget {
-  const RoadServicesScreen({super.key});
+  final String? initialServiceKey;
+
+  const RoadServicesScreen({
+    super.key,
+    this.initialServiceKey,
+  });
 
   @override
   State<RoadServicesScreen> createState() => _RoadServicesScreenState();
@@ -27,7 +31,6 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
   dynamic selectedVehicle;
   bool _opening = false;
 
-  // ===== Fixed main palette =====
   static const Color _bgStart = Color(0xFF081A36);
   static const Color _bgMid = Color(0xFF0B2348);
   static const Color _bgEnd = Color(0xFF040D1D);
@@ -39,7 +42,9 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
   static const Color _accent = Color(0xFF1B4F9C);
   static const Color _accentDark = Color(0xFF10386B);
   static const Color _accentSoft = Color(0xFFE7EEF9);
+  static const Color _accentGlow = Color(0xFF7CC4F5);
 
+  // ignore: unused_field
   static const Color _text = Color(0xFFF2F6FB);
   static const Color _muted = Color(0xFFC9D6EA);
   // ignore: unused_field
@@ -49,24 +54,49 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
   // ignore: unused_field
   static const Color _lime = Color(0xFFE8F09E);
 
-  // ===== Smart diagnosis =====
-  static const Color _danger = Color.fromARGB(255, 205, 28, 49);
-  static const Color _danger2 = Color.fromARGB(255, 193, 15, 30);
-  static const Color _danger3 = Color(0xFF8F1037);
+  static const Color _danger = Color.fromARGB(255, 223, 5, 5);
+  static const Color _danger2 = Color.fromARGB(255, 249, 0, 0);
+  static const Color _danger3 = Color.fromARGB(255, 243, 5, 5);
   static const Color _dangerSoft = Color(0xFFFFD1DB);
 
   String get _userId => "68fe4505493ae17aa81d605b";
 
   final List<Map<String, dynamic>> services = const [
-    {"key": "tow", "name": "خدمة ونش", "img": "assets/images/png.png"},
-    {"key": "battery", "name": "خدمة بطارية", "img": "assets/images/l.png"},
-    {"key": "fuel", "name": "خدمة بنزين", "img": "assets/images/b.png"},
-    {"key": "tire", "name": "خدمة الكاوتش", "img": "assets/images/tire.png"},
-    {"key": "ride", "name": "سيارة ركاب", "img": "assets/images/car.png"},
+    {
+      "key": "tow",
+      "name": "خدمة ونش",
+      "img": "assets/images/s.png",
+      "icon": Icons.local_shipping_rounded,
+    },
+    {
+      "key": "battery",
+      "name": "خدمة بطارية",
+      "img": "assets/images/ss.png",
+      "icon": Icons.battery_charging_full_rounded,
+    },
+    {
+      "key": "fuel",
+      "name": "خدمة بنزين",
+      "img": "assets/images/ssss.png",
+      "icon": Icons.local_gas_station_rounded,
+    },
+    {
+      "key": "tire",
+      "name": "خدمة الكاوتش",
+      "img": "assets/images/sss.png",
+      "icon": Icons.trip_origin_rounded,
+    },
+    {
+      "key": "ride",
+      "name": "سيارة ركاب",
+      "img": "assets/images/sssss.png",
+      "icon": Icons.directions_car_filled_rounded,
+    },
     {
       "key": "accident",
       "name": "تبليغ عن حادث",
-      "img": "assets/images/acc.png",
+      "img": "assets/images/ssssss.png",
+      "icon": Icons.warning_amber_rounded,
       "openDirect": true,
     },
   ];
@@ -80,6 +110,8 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
       vsync: this,
       duration: const Duration(milliseconds: 4200),
     )..repeat(reverse: true);
+
+    selected = widget.initialServiceKey;
   }
 
   @override
@@ -99,6 +131,8 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
       SnackBar(
         content: Text(msg, textAlign: TextAlign.center),
         behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF122946),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }
@@ -143,25 +177,13 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
         stops: const [0.0, 0.55, 1.0],
       );
 
-  LinearGradient get _selectedGradient => LinearGradient(
+  LinearGradient get _selectedGradient => const LinearGradient(
         begin: Alignment.topRight,
         end: Alignment.bottomLeft,
         colors: [
-          _accent.withOpacity(.20),
-          Colors.white.withOpacity(.09),
-          Colors.white.withOpacity(.06),
-        ],
-        stops: const [0.0, 0.60, 1.0],
-      );
-
-  // ignore: unused_element
-  LinearGradient get _premiumAppBarGradient => const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Color(0xFF1D4F99),
-          Color(0xFF163F7E),
-          Color(0xFF0E2D60),
+          Color(0xFF245AA6),
+          Color(0xFF173E75),
+          Color(0xFF102C54),
         ],
       );
 
@@ -180,7 +202,7 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
           offset: const Offset(0, 18),
         ),
         BoxShadow(
-          color: const Color(0xFF5F9FD3).withOpacity(.16),
+          color: _accentGlow.withOpacity(.16),
           blurRadius: 22,
           offset: const Offset(0, 12),
         ),
@@ -192,7 +214,7 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
 
     final mq = MediaQuery.of(context);
     final scale = mq.textScaler.scale(1.0);
-    final clamped = scale.clamp(1.0, 1.15);
+    final clamped = scale.clamp(1.0, 1.12);
     final fixedMq = mq.copyWith(textScaler: TextScaler.linear(clamped));
 
     final items = _items;
@@ -210,19 +232,23 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
                 _sliverAppBar(),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.fromLTRB(16, 14, 16, 114 + bottomPad),
+                    padding: EdgeInsets.fromLTRB(16, 10, 16, 118 + bottomPad),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _heroHeader(),
-                        const SizedBox(height: 14),
+                        _compactTopStrip(),
+                        const SizedBox(height: 12),
                         _smartDiagnosisCard(),
                         const SizedBox(height: 14),
+                        _selectionSummaryStrip(),
+                        const SizedBox(height: 14),
+                        _servicesHeader(),
+                        const SizedBox(height: 12),
                         LayoutBuilder(
                           builder: (context, c) {
                             final w = c.maxWidth;
-                            final crossAxisCount = w >= 560 ? 3 : 2;
-                            final aspect = w >= 560 ? 1.02 : 0.92;
+                            final crossAxisCount = w >= 700 ? 3 : 2;
+                            final aspect = w >= 700 ? 0.88 : 0.78;
 
                             return GridView.builder(
                               itemCount: items.length,
@@ -240,6 +266,7 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
                                 final String key = item["key"] as String;
                                 final String name = item["name"] as String;
                                 final String img = item["img"] as String;
+                                final IconData icon = item["icon"] as IconData;
                                 final bool openDirect =
                                     (item["openDirect"] == true);
 
@@ -253,6 +280,7 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
                                     keyId: key,
                                     name: name,
                                     img: img,
+                                    icon: icon,
                                     openDirect: openDirect,
                                     selected: isSel,
                                     onTap: _opening
@@ -261,7 +289,6 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
                                             _tap(() => setState(() {
                                                   selected = key;
                                                 }));
-
                                             await _openSelected(key);
                                           },
                                   ),
@@ -304,15 +331,23 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
             Container(decoration: BoxDecoration(gradient: _bgGradient)),
             Align(
               alignment: Alignment(dx, -0.92),
-              child: _glowBlob(size: 260, opacity: 0.18),
+              child: _glowBlob(size: 240, opacity: 0.16),
             ),
             Align(
               alignment: Alignment(-0.85, dy),
-              child: _glowBlob(size: 320, opacity: 0.14),
+              child: _glowBlob(size: 300, opacity: 0.12),
             ),
             Align(
               alignment: Alignment(0.95, 0.25 - dy),
-              child: _glowBlob(size: 240, opacity: 0.12),
+              child: _glowBlob(size: 220, opacity: 0.10),
+            ),
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _RoadBackdropPainter(
+                  lineColor: Colors.white.withOpacity(.018),
+                  accentColor: _accentGlow.withOpacity(.035),
+                ),
+              ),
             ),
             Container(
               decoration: BoxDecoration(
@@ -343,7 +378,7 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
         gradient: RadialGradient(
           colors: [
             _accent.withOpacity(opacity),
-            _accent.withOpacity(opacity * 0.35),
+            _accent.withOpacity(opacity * 0.32),
             Colors.transparent,
           ],
           stops: const [0.0, 0.45, 1.0],
@@ -357,6 +392,7 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
       pinned: true,
       backgroundColor: Colors.transparent,
       elevation: 0,
+      toolbarHeight: 68,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
         onPressed: () => Navigator.pop(context),
@@ -373,16 +409,16 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
               border: Border.all(color: Colors.white.withOpacity(.16)),
             ),
             child: const Icon(
-              Icons.directions_car_rounded,
-              color: _text,
-              size: 18,
+              Icons.alt_route_rounded,
+              color: Colors.white,
+              size: 17,
             ),
           ),
           const SizedBox(width: 8),
           Text(
             "خدمات الطريق",
             style: GoogleFonts.cairo(
-              fontSize: 18,
+              fontSize: 17.5,
               fontWeight: FontWeight.w900,
               color: Colors.white,
             ),
@@ -407,82 +443,147 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
     );
   }
 
-  Widget _heroHeader() {
+  Widget _compactTopStrip() {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(.06),
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: Colors.white10),
+            color: Colors.white.withOpacity(.05),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withOpacity(.08)),
           ),
           child: Row(
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _accent.withOpacity(.14),
-                  border: Border.all(color: _accent.withOpacity(.22)),
+                  borderRadius: BorderRadius.circular(14),
+                  gradient: _ctaGradient,
+                  boxShadow: _brandGlow.take(1).toList(),
                 ),
                 child: const Icon(
-                  Icons.handyman_rounded,
-                  color: _accentSoft,
-                  size: 24,
+                  Icons.flash_on_rounded,
+                  color: Colors.white,
+                  size: 22,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "اطلب خدمتك في ثواني",
-                      style: GoogleFonts.cairo(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 17,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "اختار الخدمة → اختار عربيتك → حدد موقعك → نوصلك بأقرب فني",
-                      style: GoogleFonts.cairo(
-                        color: _muted,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12.5,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  "اختار الخدمة المناسبة وابدأ طلبك بسرعة",
+                  style: GoogleFonts.cairo(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13.4,
+                    height: 1.25,
+                  ),
                 ),
               ),
-              if (selected != null)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(.20),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: _accent.withOpacity(.24)),
-                  ),
-                  child: Text(
-                    "مختار",
-                    style: GoogleFonts.cairo(
-                      color: _accentSoft,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                    ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(.06),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: Colors.white.withOpacity(.08)),
+                ),
+                child: Text(
+                  "Road",
+                  style: GoogleFonts.cairo(
+                    color: _accentSoft,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
+              ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _selectionSummaryStrip() {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(.045),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: selected != null
+              ? _accentGlow.withOpacity(.24)
+              : Colors.white.withOpacity(.08),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              gradient: selected != null ? _ctaGradient : _glassGradient,
+              border: Border.all(color: Colors.white.withOpacity(.10)),
+            ),
+            child: Icon(
+              selected != null ? Icons.check_rounded : Icons.grid_view_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              selected == null
+                  ? "اختر نوع الخدمة من البطاقات بالأسفل"
+                  : "تم اختيار: ${_selectedName()}",
+              style: GoogleFonts.cairo(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                fontSize: 13.2,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _servicesHeader() {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            "الخدمات المتاحة",
+            style: GoogleFonts.cairo(
+              color: Colors.white,
+              fontSize: 17,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(.06),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: Colors.white.withOpacity(.08)),
+          ),
+          child: Text(
+            "${services.length} خدمات",
+            style: GoogleFonts.cairo(
+              color: _accentSoft,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -491,7 +592,7 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
       width: double.infinity,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
               color: _danger.withOpacity(.30),
@@ -501,14 +602,14 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(24),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
             child: Material(
               color: Colors.transparent,
               child: InkWell(
                 onTap: _openSmartDiagnosis,
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(24),
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -533,7 +634,7 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
                         height: 52,
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(.14),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(18),
                           border: Border.all(
                             color: Colors.white.withOpacity(.18),
                           ),
@@ -550,18 +651,18 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "تايه في مشكلة سيارتك؟",
+                              "التشخيص الذكي",
                               style: GoogleFonts.cairo(
-                                fontSize: 19,
+                                fontSize: 18.5,
                                 fontWeight: FontWeight.w900,
                                 color: Colors.white,
                               ),
                             ),
                             const SizedBox(height: 3),
                             Text(
-                              "اطلب التشخيص الذكي الآن",
+                              "حل أسرع لو مش عارف نوع العطل",
                               style: GoogleFonts.cairo(
-                                fontSize: 13.5,
+                                fontSize: 13.2,
                                 fontWeight: FontWeight.w800,
                                 color: Colors.white.withOpacity(.92),
                               ),
@@ -600,35 +701,49 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
     required String keyId,
     required String name,
     required String img,
+    required IconData icon,
     required bool openDirect,
     required bool selected,
     required VoidCallback? onTap,
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(26),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
+        duration: const Duration(milliseconds: 240),
         curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(26),
           border: Border.all(
-            color: selected ? _accent.withOpacity(.95) : Colors.white12,
-            width: selected ? 2.4 : 1.2,
+            color: selected ? _accentGlow.withOpacity(.95) : Colors.white10,
+            width: selected ? 2.2 : 1.1,
           ),
           gradient: selected ? _selectedGradient : _glassGradient,
           boxShadow: selected ? _brandGlow : _softShadow,
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(26),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+            filter: ImageFilter.blur(sigmaX: 13, sigmaY: 13),
             child: Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(12),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _serviceImage(img),
+                  Row(
+                    children: [
+                      _serviceIconBadge(icon, selected: selected),
+                      const Spacer(),
+                      if (openDirect)
+                        _fastChip()
+                      else
+                        _selectStateChip(selected),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: _serviceImageLarge(img, selected: selected),
+                  ),
                   const SizedBox(height: 12),
                   Text(
                     name,
@@ -637,33 +752,11 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.cairo(
                       color: Colors.white,
-                      fontSize: 15.5,
+                      fontSize: 16,
                       fontWeight: FontWeight.w900,
-                      height: 1.18,
+                      height: 1.15,
                     ),
                   ),
-                  if (openDirect) ...[
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _accent.withOpacity(.14),
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: _accent.withOpacity(.22)),
-                      ),
-                      child: Text(
-                        "يفتح مباشرة",
-                        style: GoogleFonts.cairo(
-                          color: _accentSoft,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
@@ -673,26 +766,86 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
     );
   }
 
-  Widget _serviceImage(String img) {
+  Widget _serviceIconBadge(IconData icon, {required bool selected}) {
     return Container(
-      height: 88,
-      width: double.infinity,
-      alignment: Alignment.center,
+      width: 42,
+      height: 42,
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.10)),
+        borderRadius: BorderRadius.circular(14),
+        gradient: selected ? _ctaGradient : _glassGradient,
+        border: Border.all(
+          color: selected
+              ? Colors.white.withOpacity(.16)
+              : Colors.white.withOpacity(.10),
+        ),
+        boxShadow: selected ? _brandGlow.take(1).toList() : null,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      child: FittedBox(
+      child: Icon(
+        icon,
+        color: Colors.white,
+        size: 22,
+      ),
+    );
+  }
+
+  Widget _fastChip() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(.18),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.red.withOpacity(.18)),
+      ),
+      child: Text(
+        "مباشر",
+        style: GoogleFonts.cairo(
+          color: Colors.white,
+          fontSize: 10.8,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+
+  Widget _selectStateChip(bool selected) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(.06),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withOpacity(.08)),
+      ),
+      child: Text(
+        selected ? "تم الاختيار" : "اختيار",
+        style: GoogleFonts.cairo(
+          color: Colors.white.withOpacity(.92),
+          fontSize: 10.8,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+
+  Widget _serviceImageLarge(String img, {required bool selected}) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: Colors.black.withOpacity(0.12),
+        border: Border.all(
+          color: selected
+              ? Colors.white.withOpacity(.16)
+              : Colors.white.withOpacity(.08),
+        ),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Image.asset(
+        img,
         fit: BoxFit.contain,
-        child: Image.asset(
-          img,
-          errorBuilder: (_, __, ___) => Icon(
-            Icons.image_not_supported,
-            color: Colors.white.withOpacity(0.70),
-            size: 46,
-          ),
+        errorBuilder: (_, __, ___) => Icon(
+          Icons.image_not_supported,
+          color: Colors.white.withOpacity(0.70),
+          size: 56,
         ),
       ),
     );
@@ -700,7 +853,6 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
 
   Widget _bottomCta() {
     final disabled = (selected == null || _opening);
-
     final btnText = _buttonLabel();
     final sub =
         (selected == null) ? "اختار خدمة عشان تكمل" : "هنبدأ طلب الخدمة فورًا";
@@ -829,7 +981,7 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
                                           style: GoogleFonts.cairo(
                                             color: Colors.white,
                                             fontWeight: FontWeight.w900,
-                                            fontSize: 16.5,
+                                            fontSize: 16.6,
                                           ),
                                         ),
                                       ],
@@ -946,5 +1098,53 @@ class _RoadServicesScreenState extends State<RoadServicesScreen>
     } finally {
       if (mounted) setState(() => _opening = false);
     }
+  }
+}
+
+class _RoadBackdropPainter extends CustomPainter {
+  const _RoadBackdropPainter({
+    required this.lineColor,
+    required this.accentColor,
+  });
+
+  final Color lineColor;
+  final Color accentColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final linePaint = Paint()
+      ..color = lineColor
+      ..strokeWidth = 1;
+
+    for (double x = -size.height; x < size.width + size.height; x += 30) {
+      canvas.drawLine(
+        Offset(x, 0),
+        Offset(x + size.height, size.height),
+        linePaint,
+      );
+    }
+
+    final accentPaint = Paint()
+      ..color = accentColor
+      ..strokeWidth = 16
+      ..style = PaintingStyle.stroke;
+
+    canvas.drawLine(
+      Offset(size.width * .88, -10),
+      Offset(size.width * .62, size.height * .26),
+      accentPaint,
+    );
+
+    canvas.drawLine(
+      Offset(-10, size.height * .64),
+      Offset(size.width * .24, size.height * .96),
+      accentPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _RoadBackdropPainter oldDelegate) {
+    return oldDelegate.lineColor != lineColor ||
+        oldDelegate.accentColor != accentColor;
   }
 }

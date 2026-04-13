@@ -1,6 +1,7 @@
-// PATH: lib/screens/login_screen.dart
+// lib/screens/login_screen.dart
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -23,9 +24,6 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen>
     with TickerProviderStateMixin {
-  // =========================
-  // COLORS - Keep background style
-  // =========================
   static const Color _bgStart = Color(0xFF090B12);
   static const Color _bgEnd = Color(0xFF05070D);
 
@@ -35,6 +33,7 @@ class _LoginScreenState extends State<LoginScreen>
   static const Color _accent = Color.fromARGB(255, 8, 89, 143);
   static const Color _accentDark = Color.fromARGB(255, 33, 129, 194);
   static const Color _accentSoft = Color.fromARGB(255, 94, 176, 217);
+  // ignore: unused_field
   static const Color _accentGlow = Color(0xFF8FD3FF);
 
   static const Color _text = Color(0xFFF4F6F8);
@@ -44,26 +43,18 @@ class _LoginScreenState extends State<LoginScreen>
   static const Color _lime = Color.fromARGB(255, 25, 180, 232);
   static const Color _success = Color(0xFF7DD3AE);
 
-  // =========================
-  // Controllers
-  // =========================
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _passwordFocus = FocusNode();
 
   final LocalAuthentication _auth = LocalAuthentication();
 
-  // =========================
-  // Animations
-  // =========================
   late final AnimationController _logoController;
+  late final AnimationController _heroOrbitController;
   late final Animation<double> _logoScale;
   late final Animation<double> _fadeIn;
   late final Animation<Offset> _slideIn;
 
-  // =========================
-  // State
-  // =========================
   bool _obscureText = true;
   bool _isLoading = false;
 
@@ -74,9 +65,6 @@ class _LoginScreenState extends State<LoginScreen>
   String? _selectedRole;
   bool _roleChecked = false;
 
-  // =========================
-  // Pref keys
-  // =========================
   static const String _kIsLoggedInKey = 'isLoggedIn';
   static const String _kTokenKey = 'token';
   static const String _kUserIdKey = 'userId';
@@ -100,6 +88,11 @@ class _LoginScreenState extends State<LoginScreen>
       vsync: this,
       duration: const Duration(milliseconds: 900),
     )..forward();
+
+    _heroOrbitController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 10),
+    )..repeat();
 
     _logoScale = CurvedAnimation(
       parent: _logoController,
@@ -145,15 +138,13 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void dispose() {
     _logoController.dispose();
+    _heroOrbitController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _passwordFocus.dispose();
     super.dispose();
   }
 
-  // ======================================================
-  // ROLE CHECK
-  // ======================================================
   Future<void> _loadRoleOrRedirect() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -197,9 +188,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ======================================================
-  // AUTO REDIRECT
-  // ======================================================
   Future<void> _autoRedirectIfAlreadyLoggedIn() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -219,9 +207,6 @@ class _LoginScreenState extends State<LoginScreen>
     } catch (_) {}
   }
 
-  // ======================================================
-  // BIOMETRIC
-  // ======================================================
   Future<void> _initBiometric() async {
     if (kIsWeb) return;
 
@@ -263,9 +248,6 @@ class _LoginScreenState extends State<LoginScreen>
     await _goAfterLogin(role);
   }
 
-  // ======================================================
-  // ROLE RESOLVER
-  // ======================================================
   String _resolveRoleToUse({
     required String selectedRole,
     dynamic serverUserObj,
@@ -282,9 +264,6 @@ class _LoginScreenState extends State<LoginScreen>
     return "rider";
   }
 
-  // ======================================================
-  // AUTH: EMAIL/PASSWORD
-  // ======================================================
   Future<void> _login() async {
     if (_isLoading) return;
 
@@ -370,9 +349,6 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
-  // ======================================================
-  // AUTH: GOOGLE
-  // ======================================================
   Future<void> _loginWithGoogle() async {
     if (_isLoading) return;
 
@@ -463,9 +439,6 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
-  // ======================================================
-  // NAVIGATION
-  // ======================================================
   Future<void> _goAfterLogin(String role) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(_kTokenKey) ?? "";
@@ -486,9 +459,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ======================================================
-  // HELPERS
-  // ======================================================
   bool _isTechnicianRole(String role) {
     final r = role.toLowerCase().trim();
     return r == "driver" ||
@@ -571,9 +541,6 @@ class _LoginScreenState extends State<LoginScreen>
 
   bool get _isTechnicianSelected => _isTechnicianRole(_selectedRole ?? "");
 
-  // ======================================================
-  // UI
-  // ======================================================
   @override
   Widget build(BuildContext context) {
     if (!_roleChecked) {
@@ -787,44 +754,14 @@ class _LoginScreenState extends State<LoginScreen>
       scale: _logoScale,
       child: Column(
         children: [
-          Container(
-            width: 104,
-            height: 104,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  _accentSoft,
-                  _accent,
-                  _accentDark,
-                ],
-              ),
-              border: Border.all(
-                color: Colors.white.withOpacity(.14),
-                width: 1.2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: _accent.withOpacity(.30),
-                  blurRadius: 30,
-                  spreadRadius: 2,
-                ),
-                BoxShadow(
-                  color: _accentGlow.withOpacity(.10),
-                  blurRadius: 60,
-                  spreadRadius: 8,
-                ),
-              ],
-            ),
-            child: Icon(
-              _isTechnicianSelected
-                  ? Icons.build_circle_rounded
-                  : Icons.directions_car_filled_rounded,
-              color: Colors.white,
-              size: 46,
-            ),
+          AnimatedBuilder(
+            animation: _heroOrbitController,
+            builder: (_, __) {
+              return _LoginHeroIcon(
+                isTechnician: _isTechnicianSelected,
+                orbitValue: _heroOrbitController.value,
+              );
+            },
           ),
           const SizedBox(height: 18),
           const Text(
@@ -1319,6 +1256,208 @@ class _LoginScreenState extends State<LoginScreen>
           ],
         ),
         child: Icon(icon, color: _text, size: 18),
+      ),
+    );
+  }
+}
+
+class _LoginHeroIcon extends StatelessWidget {
+  const _LoginHeroIcon({
+    required this.isTechnician,
+    required this.orbitValue,
+  });
+
+  final bool isTechnician;
+  final double orbitValue;
+
+  static const Color _accent = Color.fromARGB(255, 8, 89, 143);
+  static const Color _accentDark = Color.fromARGB(255, 33, 129, 194);
+  static const Color _accentSoft = Color.fromARGB(255, 94, 176, 217);
+  static const Color _accentGlow = Color(0xFF8FD3FF);
+
+  @override
+  Widget build(BuildContext context) {
+    final Color glow = isTechnician ? _accentSoft : _accentGlow;
+
+    return SizedBox(
+      width: 134,
+      height: 134,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 134,
+            height: 134,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  glow.withOpacity(.22),
+                  glow.withOpacity(.04),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+          Transform.rotate(
+            angle: orbitValue * math.pi * 2,
+            child: SizedBox(
+              width: 122,
+              height: 122,
+              child: CustomPaint(
+                painter: _LoginOrbitPainter(
+                  color: glow.withOpacity(.70),
+                ),
+              ),
+            ),
+          ),
+          Container(
+            width: 104,
+            height: 104,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  _accentSoft,
+                  _accent,
+                  _accentDark,
+                ],
+              ),
+              border: Border.all(
+                color: Colors.white.withOpacity(.15),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: _accent.withOpacity(.28),
+                  blurRadius: 28,
+                  spreadRadius: 2,
+                ),
+                BoxShadow(
+                  color: _accentGlow.withOpacity(.10),
+                  blurRadius: 54,
+                  spreadRadius: 8,
+                ),
+              ],
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Positioned(
+                  top: 12,
+                  left: 16,
+                  right: 16,
+                  child: Container(
+                    height: 7,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(99),
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.white.withOpacity(.30),
+                          Colors.white.withOpacity(.06),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.white.withOpacity(.10),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(.10),
+                    ),
+                  ),
+                ),
+                Icon(
+                  isTechnician
+                      ? Icons.admin_panel_settings_rounded
+                      : Icons.login_rounded,
+                  color: Colors.white,
+                  size: 40,
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 18,
+            right: 20,
+            child: _TinyDot(color: glow.withOpacity(.95), size: 8),
+          ),
+          Positioned(
+            bottom: 18,
+            left: 18,
+            child: _TinyDot(color: glow.withOpacity(.72), size: 6),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoginOrbitPainter extends CustomPainter {
+  const _LoginOrbitPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint p = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..color = color;
+
+    final Rect rect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(10, 10, size.width - 20, size.height - 20),
+      const Radius.circular(30),
+    ).outerRect;
+
+    canvas.drawArc(rect, .35, 1.0, false, p);
+    canvas.drawArc(rect, 1.95, .72, false, p);
+    canvas.drawArc(rect, 3.85, .82, false, p);
+
+    final Paint dot = Paint()..color = color;
+    canvas.drawCircle(Offset(size.width * .80, size.height * .30), 2.2, dot);
+    canvas.drawCircle(
+      Offset(size.width * .25, size.height * .76),
+      1.8,
+      dot..color = color.withOpacity(.7),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _LoginOrbitPainter oldDelegate) {
+    return oldDelegate.color != color;
+  }
+}
+
+class _TinyDot extends StatelessWidget {
+  const _TinyDot({
+    required this.color,
+    required this.size,
+  });
+
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(.45),
+            blurRadius: 10,
+          ),
+        ],
       ),
     );
   }
